@@ -1,5 +1,6 @@
 
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { ArticleCard } from "@/components/ArticleCard";
 
 // Temporary mock data - will be replaced with RSS feed data
@@ -35,9 +36,9 @@ const mockArticles = [
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-paper-light">
+    <div className="min-h-screen bg-paper-light flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-playfair text-2xl font-semibold text-ink-dark">
@@ -51,6 +52,7 @@ const Index = () => {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 };
