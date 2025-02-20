@@ -62,7 +62,7 @@ export const useRSSFeed = (category?: string) => {
           description: "Please try again later",
           variant: "destructive"
         });
-        return [];
+        throw error; // Re-throw the error so React Query can handle it
       }
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
