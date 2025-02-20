@@ -5,7 +5,6 @@ import { fetchArticles } from '@/utils/dbUtils';
 
 const RSS_FEEDS = {
   tech: 'https://feeds.arstechnica.com/arstechnica/index',
-  // We'll add more feeds here as we get them
 };
 
 export const useRSSFeed = (category?: string) => {
@@ -17,7 +16,7 @@ export const useRSSFeed = (category?: string) => {
   });
 
   // Also fetch from RSS and update database
-  useQuery({
+  const rssQuery = useQuery({
     queryKey: ['rss-feed', category],
     queryFn: () => {
       // For now, we only have the tech feed
@@ -26,7 +25,8 @@ export const useRSSFeed = (category?: string) => {
       }
       return Promise.resolve([]);
     },
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 0, // Set to 0 to fetch immediately
+    refetchOnMount: true, // Force fetch on mount
     refetchInterval: 1000 * 60 * 10, // 10 minutes
     retry: 3,
   });
