@@ -22,7 +22,7 @@ const RSS_SOURCES = {
   lifestyle: 'Lifehacker',
   business: 'Entrepreneur',
   us: 'Reuters',
-  world: 'New York Times'
+  world: 'BBC News'
 };
 
 const decodeHTMLEntities = (text: string): string => {
