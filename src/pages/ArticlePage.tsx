@@ -51,7 +51,14 @@ export default function ArticlePage() {
     );
   }
 
-  const sanitizedContent = DOMPurify.sanitize(article.content);
+  // Add console.log to debug content
+  console.log('Article content:', article.content);
+  
+  // Sanitize the content
+  const sanitizedContent = DOMPurify.sanitize(article.content, {
+    ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'blockquote', 'img'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title']
+  });
 
   return (
     <div className="min-h-screen bg-paper-light flex flex-col">
