@@ -43,15 +43,19 @@ const Index = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <ArticleList 
-                articles={paginatedArticles}
-                calculateReadingTime={calculateReadingTime}
-              />
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <ArticleList 
+                  articles={paginatedArticles}
+                  calculateReadingTime={calculateReadingTime}
+                />
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              </div>
             </div>
 
             <aside className="lg:col-span-1">
