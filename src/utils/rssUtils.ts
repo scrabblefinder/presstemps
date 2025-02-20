@@ -61,7 +61,8 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   const feed = parser.parse(xmlData);
   const items = feed.rss.channel.item;
 
-  return items.map((item: any) => {
+  // Take only the first 20 articles
+  return items.slice(0, 20).map((item: any) => {
     let image = item['media:content']?.["@_url"];
     
     if (!image) {
@@ -78,6 +79,7 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
 
     // Get the full content from the content:encoded field if available
     const fullContent = item['content:encoded'] || item.description || '';
+    console.log('Article content length:', fullContent.length); // Debug log to check content length
 
     return {
       title: decodedTitle,
@@ -98,7 +100,7 @@ export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<R
     // Get category ID first
     const categoryId = await getCategoryId(categorySlug);
 
-    // Fetch last 50 articles from RSS feed
+    // Fetch articles from RSS feed
     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
     const response = await fetch(proxyUrl);
     const data = await response.text();

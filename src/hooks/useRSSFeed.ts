@@ -5,7 +5,7 @@ import { fetchArticles } from '@/utils/dbUtils';
 import { useToast } from "@/components/ui/use-toast";
 
 const RSS_FEEDS = {
-  tech: 'https://feeds.arstechnica.com/arstechnica/index',
+  tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',
 };
 
 export const useRSSFeed = (category?: string) => {
