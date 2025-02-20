@@ -12,15 +12,17 @@ import { Pagination } from "@/components/news/Pagination";
 const ARTICLES_PER_PAGE = 10;
 
 const CATEGORY_ORDER = [
+  'us',
+  'world',
   'politics',
-  'sports',
   'business',
   'tech',
   'entertainment',
-  'lifestyle',
-  'us',
-  'world'
+  'sports',
+  'lifestyle'
 ];
+
+const FEATURED_CATEGORIES = ['us', 'world'];
 
 const calculateReadingTime = (date: string): number => {
   if (!date) return 3; // Default reading time
@@ -64,14 +66,60 @@ const Index = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-              {orderedCategories.map(category => (
-                <CategorySection
-                  key={category}
-                  category={category}
-                  articles={groupedArticles[category]}
-                />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+              {orderedCategories.map(category => {
+                const articleList = groupedArticles[category];
+                if (!articleList) return null;
+
+                if (FEATURED_CATEGORIES.includes(category)) {
+                  return (
+                    <CategorySection
+                      key={category}
+                      category={category}
+                      articles={articleList}
+                    />
+                  );
+                }
+                return (
+                  <div key={category} className="relative">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-playfair text-2xl font-semibold text-ink-dark capitalize border-b-2 border-ink-dark/10 pb-2">
+                        {category}
+                      </h2>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs font-medium text-ink hover:text-ink-dark transition-colors"
+                        asChild
+                      >
+                        <a href={`/${category}`} className="flex items-center gap-1">
+                          More articles <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </Button>
+                    </div>
+                    <div className="space-y-4">
+                      {articleList.slice(0, 5).map((article) => (
+                        <a
+                          key={article.url}
+                          href={article.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group block"
+                        >
+                          <article className="h-full">
+                            <h4 className="text-sm font-medium text-ink-light group-hover:text-ink-dark transition-colors line-clamp-3">
+                              {article.title}
+                            </h4>
+                            <div className="mt-2 flex items-center gap-2 text-xs text-ink-light/75">
+                              <span>{article.source}</span>
+                            </div>
+                          </article>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
