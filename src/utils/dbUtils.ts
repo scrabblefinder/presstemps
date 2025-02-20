@@ -15,6 +15,7 @@ export interface Article {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  url?: string | null;  // Added this field
 }
 
 export const saveArticle = async (article: Omit<Article, 'id' | 'created_at' | 'updated_at'>) => {
@@ -32,7 +33,7 @@ export const saveArticle = async (article: Omit<Article, 'id' | 'created_at' | '
 };
 
 export const fetchArticles = async (category?: string) => {
-  console.log('Fetching articles for category:', category); // Add logging
+  console.log('Fetching articles for category:', category);
 
   let query = supabase
     .from('articles')
@@ -60,11 +61,11 @@ export const fetchArticles = async (category?: string) => {
   const { data, error } = await query;
 
   if (error) {
-    console.error('Supabase query error:', error); // Add logging
+    console.error('Supabase query error:', error);
     throw error;
   }
   
-  console.log('Query result:', data); // Add logging
+  console.log('Query result:', data);
   return data as (Article & { categories: { name: string; slug: string } })[];
 };
 
