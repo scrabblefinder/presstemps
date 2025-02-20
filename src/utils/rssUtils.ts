@@ -13,14 +13,14 @@ export interface RSSArticle {
 }
 
 const RSS_SOURCES = {
-  politics: 'Daily Kos',
-  tech: 'Ars Technica',
-  sports: 'Fox Sports',
-  entertainment: 'Engadget',
-  lifestyle: 'Lifehacker',
-  business: 'Entrepreneur',
-  us: 'Reuters',
-  world: 'BBC News'
+  politics: 'NY Times Politics',
+  tech: 'NY Times Technology',
+  sports: 'NY Times Sports',
+  entertainment: 'NY Times Arts',
+  lifestyle: 'NY Times Style',
+  business: 'NY Times Business',
+  us: 'NY Times US',
+  world: 'NY Times World'
 };
 
 const decodeHTMLEntities = (text: string): string => {
@@ -45,23 +45,43 @@ const getDefaultImage = (category: string) => {
 
 const extractImageFromContent = (content: string | undefined): string | null => {
   if (!content || typeof content !== 'string') return null;
+  
+  // Try to find any image URL in the content
   const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
-  return imgMatch ? imgMatch[1] : null;
+  if (imgMatch) return imgMatch[1];
+  
+  // Try to find a media:content tag
+  const mediaMatch = content.match(/<media:content[^>]+url="([^">]+)"/);
+  if (mediaMatch) return mediaMatch[1];
+  
+  return null;
 };
 
-const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] => {
-  const parser = new XMLParser({
-    ignoreAttributes: false,
-    attributeNamePrefix: "@_",
-    parseAttributeValue: true,
-    trimValues: true,
-    parseTagValue: false,
-  });
-
+export const fetchRSSFeeds = async (url: string, categorySlug: string): Promise<RSSArticle[]> => {
   try {
-    const feed = parser.parse(xmlData);
-    const channel = feed?.rss?.channel || feed?.feed || feed;
+    console.log(`Fetching RSS feed for ${categorySlug}:`, url);
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
     
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.text();
+    console.log(`Received data for ${categorySlug}, length:`, data.length);
+    
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: "@_",
+      parseAttributeValue: true,
+      trimValues: true,
+      parseTagValue: false,
+    });
+
+    const feed = parser.parse(data);
+    console.log(`Parsed feed for ${categorySlug}:`, feed);
+    
+    const channel = feed?.rss?.channel || feed?.feed || feed;
     if (!channel) {
       console.error('Invalid feed structure:', feed);
       return [];
@@ -70,65 +90,56 @@ const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] => {
     const items = channel.item || channel.entry || [];
     const itemArray = Array.isArray(items) ? items : [items];
 
-    return itemArray.slice(0, 20).map((item: any) => {
-      let fullContent = '';
-      
-      // Handle different content fields
-      if (item['content:encoded']) {
-        fullContent = item['content:encoded'];
-      } else if (item.content) {
-        fullContent = typeof item.content === 'string' ? item.content : item.content['#text'] || '';
-      } else if (item.description) {
-        fullContent = item.description;
-      }
-
-      // Handle different image locations
+    return itemArray.slice(0, 10).map((item: any) => {
       let image = null;
+      
+      // Try different possible image locations
       if (item['media:content']) {
         const mediaContent = Array.isArray(item['media:content']) 
           ? item['media:content'][0] 
           : item['media:content'];
         image = mediaContent?.["@_url"];
-      } else if (item['media:thumbnail']) {
+      } 
+      
+      if (!image && item['media:thumbnail']) {
         image = item['media:thumbnail']?.["@_url"];
-      } else if (item.enclosure) {
+      }
+      
+      if (!image && item.enclosure) {
         image = item.enclosure?.["@_url"];
       }
-
+      
       if (!image) {
-        image = extractImageFromContent(fullContent) || 
-               extractImageFromContent(item.description) || 
-               getDefaultImage(category);
+        const content = item['content:encoded'] || item.content || item.description;
+        image = extractImageFromContent(content);
       }
 
-      const title = typeof item.title === 'string' ? item.title : item.title?.['#text'] || '';
-      const description = typeof item.description === 'string' ? item.description : item.description?.['#text'] || '';
+      // Fallback to default image if none found
+      if (!image) {
+        image = getDefaultImage(categorySlug);
+      }
+
+      const title = decodeHTMLEntities(
+        typeof item.title === 'string' ? item.title : item.title?.['#text'] || ''
+      );
       
+      const description = decodeHTMLEntities(
+        typeof item.description === 'string' ? item.description : item.description?.['#text'] || ''
+      );
+
       return {
-        title: decodeHTMLEntities(title),
-        excerpt: decodeHTMLEntities(description.replace(/<[^>]+>/g, '').slice(0, 150) + '...'),
+        title,
+        excerpt: description.replace(/<[^>]+>/g, '').slice(0, 150) + '...',
         image,
-        category,
-        source: RSS_SOURCES[category as keyof typeof RSS_SOURCES] || category,
+        category: categorySlug,
+        source: RSS_SOURCES[categorySlug as keyof typeof RSS_SOURCES] || categorySlug,
         date: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
-        author: item.author || item.creator || RSS_SOURCES[category as keyof typeof RSS_SOURCES],
+        author: item.author || item.creator || RSS_SOURCES[categorySlug as keyof typeof RSS_SOURCES],
         url: item.link || item.guid || '',
       };
     }).filter(item => item.title && item.url);
   } catch (error) {
-    console.error('Error parsing RSS feed:', error);
-    return [];
-  }
-};
-
-export const fetchRSSFeeds = async (url: string, categorySlug: string): Promise<RSSArticle[]> => {
-  try {
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-    const response = await fetch(proxyUrl);
-    const data = await response.text();
-    return parseRSSFeed(data, categorySlug);
-  } catch (error) {
-    console.error('Error in fetchRSSFeeds:', error);
+    console.error(`Error fetching RSS feed for ${categorySlug}:`, error);
     return [];
   }
 };
