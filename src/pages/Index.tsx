@@ -4,9 +4,11 @@ import { Footer } from "@/components/Footer";
 import { ArticleCard } from "@/components/ArticleCard";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useParams } from "react-router-dom";
 
 const Index = () => {
-  const { data: articles, isLoading, error } = useRSSFeed();
+  const { category } = useParams();
+  const { data: articles, isLoading, error } = useRSSFeed(category);
 
   return (
     <div className="min-h-screen bg-paper-light flex flex-col">
@@ -15,7 +17,7 @@ const Index = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-playfair text-2xl font-semibold text-ink-dark">
-              Latest Tech News
+              {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} News` : 'Latest Tech News'}
             </h2>
           </div>
           {isLoading ? (
@@ -33,20 +35,24 @@ const Index = () => {
             <div className="text-center py-12">
               <p className="text-ink-light">Failed to load articles. Please try again later.</p>
             </div>
-          ) : (
+          ) : articles && articles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {articles?.slice(0, 50).map((article) => (
+              {articles.map((article) => (
                 <ArticleCard
                   key={article.id}
                   title={article.title}
                   excerpt={article.excerpt || ''}
                   image_url={article.image_url}
-                  category="Tech"
+                  category={article.categories?.name || 'Tech'}
                   source={article.source}
                   published_at={article.published_at}
-                  url={`/tech/${article.slug}`}
+                  url={`/${article.categories?.slug || 'tech'}/${article.slug}`}
                 />
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-ink-light">No articles found.</p>
             </div>
           )}
         </section>
