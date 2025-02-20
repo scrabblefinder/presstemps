@@ -58,15 +58,15 @@ const Index = () => {
                   </Link>
                 </div>
 
-                {/* Articles Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Featured Article - Takes full width */}
+                {/* Articles Layout */}
+                <div className="space-y-6">
+                  {/* Featured Article with Image */}
                   {categoryArticles && categoryArticles[0] && (
                     <Link 
                       to={`/${category}/${categoryArticles[0].slug}`}
-                      className="col-span-2 group relative"
+                      className="block group"
                     >
-                      <div className="relative aspect-video rounded-lg overflow-hidden">
+                      <div className="relative aspect-video rounded-lg overflow-hidden mb-4">
                         <img
                           src={categoryArticles[0].image_url}
                           alt={categoryArticles[0].title}
@@ -88,30 +88,25 @@ const Index = () => {
                     </Link>
                   )}
 
-                  {/* Secondary Articles - Split into two columns */}
-                  {categoryArticles?.slice(1, 5).map((article) => (
-                    <Link
-                      key={article.id}
-                      to={`/${category}/${article.slug}`}
-                      className="group"
-                    >
-                      <article className="h-full relative bg-white rounded-lg p-3 hover:shadow-md transition-all duration-300">
-                        <div className="relative aspect-[4/3] rounded overflow-hidden mb-3">
-                          <img
-                            src={article.image_url}
-                            alt={article.title}
-                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <h4 className="text-sm font-medium text-ink-dark group-hover:text-ink transition-colors line-clamp-2">
-                          {article.title}
-                        </h4>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-ink-light">
-                          <span>{article.source}</span>
-                        </div>
-                      </article>
-                    </Link>
-                  ))}
+                  {/* Secondary Articles - Text Only */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {categoryArticles?.slice(1, 5).map((article) => (
+                      <Link
+                        key={article.id}
+                        to={`/${category}/${article.slug}`}
+                        className="group"
+                      >
+                        <article className="h-full">
+                          <h4 className="text-sm font-medium text-ink-light group-hover:text-ink-dark transition-colors line-clamp-3">
+                            {article.title}
+                          </h4>
+                          <div className="mt-2 flex items-center gap-2 text-xs text-ink-light/75">
+                            <span>{article.source}</span>
+                          </div>
+                        </article>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </section>
             ))}
