@@ -1,4 +1,3 @@
-
 import { XMLParser } from 'fast-xml-parser';
 
 export interface RSSArticle {
@@ -13,34 +12,69 @@ export interface RSSArticle {
 }
 
 const RSS_SOURCES = {
-  politics: 'NY Times Politics',
-  tech: 'NY Times Technology',
-  sports: 'NY Times Sports',
-  entertainment: 'NY Times Arts',
-  lifestyle: 'NY Times Style',
-  business: 'NY Times Business',
-  us: 'NY Times US',
-  world: 'NY Times World'
+  // Tech News
+  theverge: 'The Verge',
+  techcrunch: 'TechCrunch',
+  wired: 'Wired',
+  
+  // General News
+  reuters: 'Reuters',
+  ap: 'Associated Press',
+  bbc: 'BBC News',
+  guardian: 'The Guardian',
+  nytimes: 'The New York Times',
+  wsj: 'Wall Street Journal',
+  
+  // Business & Finance
+  bloomberg: 'Bloomberg',
+  forbes: 'Forbes',
+  economist: 'The Economist',
+  
+  // Science & Technology
+  nature: 'Nature',
+  newscientist: 'New Scientist',
+  scientific: 'Scientific American',
+  
+  // Entertainment & Culture
+  variety: 'Variety',
+  hollywood: 'Hollywood Reporter',
+  rollingstone: 'Rolling Stone',
+  
+  // Sports
+  espn: 'ESPN',
+  sports_illustrated: 'Sports Illustrated'
+};
+
+const getDefaultImage = (category: string) => {
+  const defaultImages = {
+    theverge: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1',
+    techcrunch: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+    wired: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
+    reuters: 'https://images.unsplash.com/photo-1495020689067-958852a7765e',
+    ap: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c',
+    bbc: 'https://images.unsplash.com/photo-1589262804704-c5aa9e6def89',
+    guardian: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c',
+    nytimes: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c',
+    wsj: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e',
+    bloomberg: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3',
+    forbes: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e',
+    economist: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e',
+    nature: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+    newscientist: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d',
+    scientific: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d',
+    variety: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0',
+    hollywood: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0',
+    rollingstone: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4',
+    espn: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211',
+    sports_illustrated: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211'
+  };
+  return defaultImages[category as keyof typeof defaultImages] || defaultImages.nytimes;
 };
 
 const decodeHTMLEntities = (text: string): string => {
   const textarea = document.createElement('textarea');
   textarea.innerHTML = text;
   return textarea.value;
-};
-
-const getDefaultImage = (category: string) => {
-  const defaultImages = {
-    tech: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
-    sports: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211',
-    entertainment: 'https://images.unsplash.com/photo-1586899028174-e7098604235b',
-    lifestyle: 'https://images.unsplash.com/photo-1511988617509-a57c8a288659',
-    business: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f',
-    politics: 'https://images.unsplash.com/photo-1555848962-6e79363ec58f',
-    us: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74',
-    world: 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4'
-  };
-  return defaultImages[category as keyof typeof defaultImages] || defaultImages.tech;
 };
 
 const extractImageFromContent = (content: string | undefined): string | null => {

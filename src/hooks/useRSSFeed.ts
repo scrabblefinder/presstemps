@@ -1,17 +1,39 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { fetchRSSFeeds } from '@/utils/rssUtils';
 import { useToast } from "@/components/ui/use-toast";
 
 const RSS_FEEDS = {
-  tech: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',
-  sports: 'https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml',
-  entertainment: 'https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml',
-  lifestyle: 'https://rss.nytimes.com/services/xml/rss/nyt/FashionandStyle.xml',
-  business: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
-  us: 'https://rss.nytimes.com/services/xml/rss/nyt/US.xml',
-  world: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
-  politics: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml'
+  // Tech News
+  theverge: 'https://www.theverge.com/rss/index.xml',
+  techcrunch: 'https://techcrunch.com/feed/',
+  wired: 'https://www.wired.com/feed/rss',
+  
+  // General News
+  reuters: 'https://feeds.reuters.com/reuters/topNews',
+  ap: 'https://feeds.feedburner.com/TheAssociatedPress-TopHeadlines',
+  bbc: 'http://feeds.bbci.co.uk/news/world/rss.xml',
+  guardian: 'https://www.theguardian.com/world/rss',
+  nytimes: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
+  wsj: 'https://feeds.a.dj.com/rss/RSSWorldNews.xml',
+  
+  // Business & Finance
+  bloomberg: 'https://feeds.bloomberg.com/markets/news.rss',
+  forbes: 'https://www.forbes.com/innovation/feed/',
+  economist: 'https://www.economist.com/business/rss.xml',
+  
+  // Science & Technology
+  nature: 'http://feeds.nature.com/nature/rss/current',
+  newscientist: 'https://www.newscientist.com/feed/home/',
+  scientific: 'https://rss.sciam.com/ScientificAmerican-Global',
+  
+  // Entertainment & Culture
+  variety: 'https://variety.com/feed/',
+  hollywood: 'https://www.hollywoodreporter.com/feed/',
+  rollingstone: 'https://www.rollingstone.com/feed/',
+  
+  // Sports
+  espn: 'https://www.espn.com/espn/rss/news',
+  sports_illustrated: 'https://www.si.com/rss/si_top_stories.rss'
 };
 
 export const useRSSFeed = (category?: string) => {
