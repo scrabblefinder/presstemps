@@ -60,9 +60,9 @@ export default function ArticlePage() {
     );
   }
 
-  const sanitizedContent = DOMPurify.sanitize(article.content, {
-    ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'blockquote', 'img', 'figure', 'figcaption', 'div'],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class']
+  const sanitizedContent = DOMPurify.sanitize(article.content || '', {
+    ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'blockquote', 'img', 'figure', 'figcaption', 'div', 'iframe'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel', 'width', 'height', 'frameborder', 'allowfullscreen']
   });
 
   return (
@@ -81,14 +81,28 @@ export default function ArticlePage() {
             </h1>
             <div className="flex items-center gap-4 text-sm text-ink-light">
               {article.author && <span>{article.author}</span>}
-              {article.author && <span>•</span>}
+              {article.author && article.published_at && <span>•</span>}
               {article.published_at && (
                 <>
                   <span>{new Date(article.published_at).toLocaleDateString()}</span>
                   <span>•</span>
                 </>
               )}
-              {article.source && <span>{article.source}</span>}
+              {article.source && (
+                <span>
+                  {article.source}
+                  {article.url && (
+                    <a 
+                      href={article.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      (View original)
+                    </a>
+                  )}
+                </span>
+              )}
             </div>
           </header>
 
@@ -123,7 +137,7 @@ export default function ArticlePage() {
                   category={article.categories?.name || ''}
                   source={article.source}
                   published_at={article.published_at}
-                  url={`/${article.categories?.slug || 'tech'}/${article.slug}`}
+                  url={`/${article.categories?.slug || 'uncategorized'}/${article.slug}`}
                 />
               ))}
             </div>
