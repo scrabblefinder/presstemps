@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchRSSFeed } from '@/utils/rssUtils';
 import { fetchArticles } from '@/utils/dbUtils';
@@ -7,19 +6,20 @@ import { useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
 const RSS_FEEDS = {
-  politics: 'https://feeds.feedburner.com/dailykos/index',  // Full content RSS feed
-  tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',  // Already provides full content
-  sports: 'https://api.foxsports.com/v1/rss?partnerKey=zBaFxRyGKCfxBagJG9b8pqLyndmvo7UU',  // Better sports RSS with images
-  entertainment: 'https://www.engadget.com/rss.xml',  // Full content entertainment feed
-  lifestyle: 'https://www.lifehacker.com/rss',  // Already good
-  business: 'https://feeds.feedburner.com/entrepreneur/latest',  // Already good
+  politics: 'https://feeds.feedburner.com/dailykos/index',
+  tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',
+  sports: 'https://api.foxsports.com/v1/rss?partnerKey=zBaFxRyGKCfxBagJG9b8pqLyndmvo7UU',
+  entertainment: 'https://www.engadget.com/rss.xml',
+  lifestyle: 'https://www.lifehacker.com/rss',
+  business: 'https://feeds.feedburner.com/entrepreneur/latest',
+  us: 'https://rss.nytimes.com/services/xml/rss/nyt/US.xml',
+  world: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
 };
 
 export const useRSSFeed = (category?: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Subscribe to database changes
   useEffect(() => {
     const channel = supabase
       .channel('articles-changes')
@@ -31,7 +31,6 @@ export const useRSSFeed = (category?: string) => {
           table: 'articles',
         },
         () => {
-          // Invalidate and refetch queries when any change occurs
           queryClient.invalidateQueries({ queryKey: ['articles'] });
         }
       )
@@ -42,7 +41,6 @@ export const useRSSFeed = (category?: string) => {
     };
   }, [queryClient]);
 
-  // Fetch from database first
   const dbQuery = useQuery({
     queryKey: ['articles', category],
     queryFn: async () => {
@@ -65,7 +63,6 @@ export const useRSSFeed = (category?: string) => {
     gcTime: 0,
   });
 
-  // Fetch RSS and update database in background
   useQuery({
     queryKey: ['rss-feed', category],
     queryFn: async () => {
@@ -75,7 +72,6 @@ export const useRSSFeed = (category?: string) => {
           queryClient.invalidateQueries({ queryKey: ['articles'] });
           return result;
         }
-        // If no category specified or on homepage, fetch all feeds
         if (!category) {
           const allResults = await Promise.all(
             Object.entries(RSS_FEEDS).map(([cat, url]) => 
@@ -91,8 +87,8 @@ export const useRSSFeed = (category?: string) => {
         return [];
       }
     },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    refetchInterval: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 10,
+    refetchInterval: 1000 * 60 * 10,
     gcTime: 0,
   });
 
