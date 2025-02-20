@@ -13,6 +13,12 @@ export interface RSSArticle {
   url: string;
 }
 
+const decodeHTMLEntities = (text: string): string => {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+};
+
 export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   const parser = new XMLParser({
     ignoreAttributes: false,
@@ -32,16 +38,19 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
       image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
     }
     
-    // Create URL-friendly slug from title
-    const slug = item.title
+    // Decode HTML entities in the title
+    const decodedTitle = decodeHTMLEntities(item.title);
+    
+    // Create URL-friendly slug from decoded title
+    const slug = decodedTitle
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
     return {
-      title: item.title,
+      title: decodedTitle,
       content: item['content:encoded'] || '',
-      excerpt: item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...' || '',
+      excerpt: decodeHTMLEntities(item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...') || '',
       image,
       category: 'Tech',
       source: 'TechCrunch',
