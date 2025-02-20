@@ -28,7 +28,9 @@ export const useRSSFeed = (category?: string) => {
         return [];
       }
     },
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 0, // Set to 0 to always fetch fresh data
+    refetchOnMount: true, // Always refetch when component mounts
+    gcTime: 0, // Don't cache data
   });
 
   // Fetch RSS and update database in background
@@ -47,7 +49,7 @@ export const useRSSFeed = (category?: string) => {
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
     refetchInterval: 1000 * 60 * 10, // 10 minutes
-    gcTime: 0, // Don't cache RSS results since we store them in DB
+    gcTime: 0, // Don't cache RSS results
   });
 
   return {
