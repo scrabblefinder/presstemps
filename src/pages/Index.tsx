@@ -4,18 +4,7 @@ import { Footer } from "@/components/Footer";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import { ExternalLink, BookOpen, Newspaper, Camera, Film, TrendingUp } from "lucide-react";
-
-const getCategoryIcon = (category: string) => {
-  const icons = {
-    tech: <Newspaper className="w-5 h-5" />,
-    entertainment: <Film className="w-5 h-5" />,
-    lifestyle: <Camera className="w-5 h-5" />,
-    business: <TrendingUp className="w-5 h-5" />,
-    sports: <BookOpen className="w-5 h-5" />,
-  };
-  return icons[category as keyof typeof icons] || <Newspaper className="w-5 h-5" />;
-};
+import { ExternalLink } from "lucide-react";
 
 const Index = () => {
   const { data: articles, isLoading, error } = useRSSFeed();
@@ -55,79 +44,74 @@ const Index = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {groupedArticles && Object.entries(groupedArticles).map(([category, categoryArticles]) => (
-              <section 
-                key={category} 
-                className="group relative overflow-hidden"
-              >
-                <div className="relative">
-                  {/* Category Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-ink-dark text-white">
-                        {getCategoryIcon(category)}
-                      </span>
-                      <h2 className="font-playfair text-xl font-semibold text-ink-dark capitalize">
-                        {category}
-                      </h2>
-                    </div>
-                    <Link 
-                      to={`/${category}`}
-                      className="flex items-center gap-1 text-xs font-medium text-ink hover:text-ink-dark transition-colors"
-                    >
-                      More <ExternalLink size={14} />
-                    </Link>
-                  </div>
+              <section key={category} className="relative">
+                {/* Category Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-playfair text-2xl font-semibold text-ink-dark capitalize border-b-2 border-ink-dark/10 pb-2">
+                    {category}
+                  </h2>
+                  <Link 
+                    to={`/${category}`}
+                    className="text-xs font-medium text-ink hover:text-ink-dark transition-colors"
+                  >
+                    More articles <ExternalLink className="inline w-3 h-3 ml-1" />
+                  </Link>
+                </div>
 
-                  {/* Featured Article */}
+                {/* Articles Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Featured Article - Takes full width */}
                   {categoryArticles && categoryArticles[0] && (
                     <Link 
-                      to={`/${category}/${categoryArticles[0].slug}`} 
-                      className="block group/article mb-6"
+                      to={`/${category}/${categoryArticles[0].slug}`}
+                      className="col-span-2 group relative"
                     >
-                      <div className="relative aspect-[16/9] rounded-xl overflow-hidden mb-4">
+                      <div className="relative aspect-video rounded-lg overflow-hidden">
                         <img
                           src={categoryArticles[0].image_url}
                           alt={categoryArticles[0].title}
-                          className="w-full h-full object-cover transform group-hover/article:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/article:opacity-100 transition-opacity duration-300" />
-                      </div>
-                      <h3 className="text-lg font-medium text-ink-dark group-hover/article:text-ink transition-colors line-clamp-2">
-                        {categoryArticles[0].title}
-                      </h3>
-                      <div className="mt-2 flex items-center gap-3 text-xs text-ink-light">
-                        <span className="font-medium">{categoryArticles[0].source}</span>
-                        <span>{categoryArticles[0].published_at ? 
-                          new Date(categoryArticles[0].published_at).toLocaleDateString() : ''}
-                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                          <h3 className="text-lg font-medium line-clamp-2 group-hover:text-paper-light transition-colors">
+                            {categoryArticles[0].title}
+                          </h3>
+                          <div className="mt-2 flex items-center gap-3 text-xs text-paper-light/80">
+                            <span>{categoryArticles[0].source}</span>
+                            <span>{categoryArticles[0].published_at ? 
+                              new Date(categoryArticles[0].published_at).toLocaleDateString() : ''}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </Link>
                   )}
 
-                  {/* Article List */}
-                  <div className="space-y-4">
-                    {categoryArticles?.slice(1, 5).map((article, index) => (
-                      <Link
-                        key={article.id}
-                        to={`/${category}/${article.slug}`}
-                        className="block group/list"
-                      >
-                        <div className="flex items-start gap-3 group-hover/list:bg-white group-hover/list:shadow-sm rounded-lg p-2 -mx-2 transition-all">
-                          <span className="font-playfair text-xl font-medium text-ink-light/30 pt-1">
-                            {(index + 1).toString().padStart(2, '0')}
-                          </span>
-                          <div className="flex-1">
-                            <h4 className="text-sm font-medium text-ink-light group-hover/list:text-ink-dark transition-colors line-clamp-2">
-                              {article.title}
-                            </h4>
-                            <div className="mt-1 flex items-center gap-2 text-xs text-ink-light/75">
-                              <span>{article.source}</span>
-                            </div>
-                          </div>
+                  {/* Secondary Articles - Split into two columns */}
+                  {categoryArticles?.slice(1, 5).map((article) => (
+                    <Link
+                      key={article.id}
+                      to={`/${category}/${article.slug}`}
+                      className="group"
+                    >
+                      <article className="h-full relative bg-white rounded-lg p-3 hover:shadow-md transition-all duration-300">
+                        <div className="relative aspect-[4/3] rounded overflow-hidden mb-3">
+                          <img
+                            src={article.image_url}
+                            alt={article.title}
+                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                          />
                         </div>
-                      </Link>
-                    ))}
-                  </div>
+                        <h4 className="text-sm font-medium text-ink-dark group-hover:text-ink transition-colors line-clamp-2">
+                          {article.title}
+                        </h4>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-ink-light">
+                          <span>{article.source}</span>
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
                 </div>
               </section>
             ))}
