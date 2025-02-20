@@ -1,4 +1,3 @@
-
 import { XMLParser } from 'fast-xml-parser';
 import { supabase } from "@/integrations/supabase/client";
 import { getCategoryId } from './dbUtils';
@@ -57,8 +56,11 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
     parseAttributeValue: true,
-    trimValues: false, // Don't trim values to preserve formatting
-    parseTagValue: false, // Don't parse tag values to preserve HTML
+    trimValues: false,
+    parseTagValue: false,
+    processEntities: false,
+    cdataTagName: "__cdata",
+    tagValueProcessor: (tagName: string, value: string) => value,
   });
 
   const feed = parser.parse(xmlData);
@@ -79,14 +81,23 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
-    // Get the full content from content:encoded, falling back to description
-    const fullContent = decodeHTMLEntities(item['content:encoded'] || item.description || '');
+    let fullContent = '';
+    if (item['content:encoded'] && item['content:encoded'].__cdata) {
+      fullContent = item['content:encoded'].__cdata;
+    } else if (item['content:encoded']) {
+      fullContent = item['content:encoded'];
+    } else {
+      fullContent = item.description || '';
+    }
+
+    fullContent = decodeHTMLEntities(fullContent);
     
-    // Remove any unwanted tracking pixels or scripts
     const cleanContent = fullContent
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<img[^>]+height="1"[^>]*>/gi, '')
-      .replace(/<img[^>]+width="1"[^>]*>/gi, '');
+      .replace(/<img[^>]+width="1"[^>]*>/gi, '')
+      .replace(/\r?\n|\r/g, '')
+      .trim();
 
     console.log(`Article ${decodedTitle} content length: ${cleanContent.length}`);
 
@@ -114,7 +125,6 @@ export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<R
     
     console.log('Parsed articles:', articles.length);
 
-    // Save articles to database
     for (const article of articles) {
       try {
         const imageUrl = await downloadAndUploadImage(article.image, article.url.split('/').pop()!);
