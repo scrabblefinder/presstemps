@@ -112,7 +112,22 @@ export const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] =>
       fullContent = item.description || '';
     }
 
+    // Get the original article URL
+    const originalUrl = item.link || item.guid || '';
+
+    // Add a note about the truncated content with a link to the full article
+    const contentNote = `
+      <div class="my-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <p class="text-gray-700">This article has been truncated. 
+          <a href="${originalUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800">
+            Read the full article on ${RSS_SOURCES[category as keyof typeof RSS_SOURCES]}
+          </a>
+        </p>
+      </div>
+    `;
+
     fullContent = decodeHTMLEntities(fullContent);
+    fullContent = fullContent + contentNote;
     
     const cleanContent = fullContent
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
@@ -134,7 +149,7 @@ export const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] =>
       source,
       date: new Date(item.pubDate).toISOString(),
       author: item.author || source,
-      url: `/${category}/${slug}`,
+      url: originalUrl, // Add the original article URL
     };
   });
 };
@@ -165,7 +180,8 @@ export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<R
             category_id: categoryId,
             source: article.source,
             author: article.author,
-            published_at: article.date
+            published_at: article.date,
+            url: article.url  // Store the original article URL
           }, {
             onConflict: 'slug'
           });
