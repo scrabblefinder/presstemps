@@ -9,7 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      articles: {
+        Row: {
+          author: string | null
+          category_id: number | null
+          content: string
+          created_at: string | null
+          excerpt: string | null
+          id: number
+          image_url: string
+          original_image_url: string | null
+          published_at: string | null
+          slug: string
+          source: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author?: string | null
+          category_id?: number | null
+          content: string
+          created_at?: string | null
+          excerpt?: string | null
+          id?: number
+          image_url: string
+          original_image_url?: string | null
+          published_at?: string | null
+          slug: string
+          source?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author?: string | null
+          category_id?: number | null
+          content?: string
+          created_at?: string | null
+          excerpt?: string | null
+          id?: number
+          image_url?: string
+          original_image_url?: string | null
+          published_at?: string | null
+          slug?: string
+          source?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

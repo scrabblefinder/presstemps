@@ -3,20 +3,29 @@ import { useParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ArticleCard } from "@/components/ArticleCard";
-import { useRSSFeed } from "@/hooks/useRSSFeed";
+import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import DOMPurify from 'dompurify';
+import { fetchArticles, fetchArticleBySlug } from "@/utils/dbUtils";
 
 export default function ArticlePage() {
   const { category = "", slug = "" } = useParams<{ category: string; slug: string }>();
-  const { data: articles, isLoading } = useRSSFeed();
+  
+  const { data: article, isLoading: isLoadingArticle } = useQuery({
+    queryKey: ['article', slug],
+    queryFn: () => fetchArticleBySlug(slug),
+  });
 
-  const article = articles?.find(a => a.url === `/${category}/${slug}`);
+  const { data: articles, isLoading: isLoadingArticles } = useQuery({
+    queryKey: ['articles'],
+    queryFn: fetchArticles,
+  });
+
   const relatedArticles = articles
-    ?.filter(a => a.url !== `/${category}/${slug}`)
+    ?.filter(a => a.slug !== slug)
     .slice(0, 3) || [];
 
-  if (isLoading) {
+  if (isLoadingArticle || isLoadingArticles) {
     return (
       <div className="min-h-screen bg-paper-light flex flex-col">
         <Header />
@@ -51,10 +60,6 @@ export default function ArticlePage() {
     );
   }
 
-  // Add console.log to debug content
-  console.log('Article content:', article.content);
-  
-  // Sanitize the content
   const sanitizedContent = DOMPurify.sanitize(article.content, {
     ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'blockquote', 'img'],
     ALLOWED_ATTR: ['href', 'src', 'alt', 'title']
@@ -68,7 +73,7 @@ export default function ArticlePage() {
           <header className="mb-8">
             <div className="mb-4">
               <span className="text-sm font-medium text-ink-light">
-                {article.category}
+                {category}
               </span>
             </div>
             <h1 className="font-playfair text-4xl md:text-5xl font-bold text-ink-dark mb-4">
@@ -77,7 +82,7 @@ export default function ArticlePage() {
             <div className="flex items-center gap-4 text-sm text-ink-light">
               <span>{article.author}</span>
               <span>•</span>
-              <span>{article.date}</span>
+              <span>{new Date(article.published_at || '').toLocaleDateString()}</span>
               <span>•</span>
               <span>{article.source}</span>
             </div>
@@ -85,7 +90,7 @@ export default function ArticlePage() {
 
           <div className="mb-8 rounded-lg overflow-hidden">
             <img
-              src={article.image}
+              src={article.image_url}
               alt={article.title}
               className="w-full h-[400px] object-cover"
             />
@@ -103,8 +108,18 @@ export default function ArticlePage() {
               Related Articles
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedArticles.map((article, index) => (
-                <ArticleCard key={index} {...article} />
+              {relatedArticles.map((article) => (
+                <ArticleCard 
+                  key={article.id}
+                  title={article.title}
+                  excerpt={article.excerpt || ''}
+                  image={article.image_url}
+                  category="Tech"
+                  source={article.source || ''}
+                  date={new Date(article.published_at || '').toISOString().split('T')[0]}
+                  url={`/tech/${article.slug}`}
+                  author={article.author || ''}
+                />
               ))}
             </div>
           </section>
