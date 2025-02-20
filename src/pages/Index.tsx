@@ -10,6 +10,15 @@ import { Button } from "@/components/ui/button";
 
 const ARTICLES_PER_PAGE = 10;
 
+const CATEGORY_ORDER = [
+  'politics',
+  'sports',
+  'business',
+  'tech',
+  'entertainment',
+  'lifestyle'
+];
+
 const calculateReadingTime = (publishedAt: string | null): number => {
   if (!publishedAt) return 3; // Default reading time
   const now = new Date();
@@ -32,6 +41,9 @@ const Index = () => {
     acc[category].push(article);
     return acc;
   }, {} as Record<string, typeof articles>);
+
+  // Sort categories according to the specified order
+  const orderedCategories = CATEGORY_ORDER.filter(category => groupedArticles?.[category]);
 
   // Get remaining articles for the news feed
   const allArticles = articles?.slice(30) || []; // After the first 30 articles used in categories
@@ -67,7 +79,7 @@ const Index = () => {
           <>
             {/* Main Categories Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-              {groupedArticles && Object.entries(groupedArticles).map(([category, categoryArticles]) => (
+              {orderedCategories.map(category => (
                 <section key={category} className="relative">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="font-playfair text-2xl font-semibold text-ink-dark capitalize border-b-2 border-ink-dark/10 pb-2">
@@ -82,26 +94,26 @@ const Index = () => {
                   </div>
 
                   <div className="space-y-6">
-                    {categoryArticles && categoryArticles[0] && (
+                    {groupedArticles[category]?.[0] && (
                       <Link 
-                        to={`/${category}/${categoryArticles[0].slug}`}
+                        to={`/${category}/${groupedArticles[category][0].slug}`}
                         className="block group"
                       >
                         <div className="relative aspect-video rounded-lg overflow-hidden mb-4">
                           <img
-                            src={categoryArticles[0].image_url}
-                            alt={categoryArticles[0].title}
+                            src={groupedArticles[category][0].image_url}
+                            alt={groupedArticles[category][0].title}
                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                             <h3 className="text-lg font-medium line-clamp-2 group-hover:text-paper-light transition-colors">
-                              {categoryArticles[0].title}
+                              {groupedArticles[category][0].title}
                             </h3>
                             <div className="mt-2 flex items-center gap-3 text-xs text-paper-light/80">
-                              <span>{categoryArticles[0].source}</span>
-                              <span>{categoryArticles[0].published_at ? 
-                                new Date(categoryArticles[0].published_at).toLocaleDateString() : ''}
+                              <span>{groupedArticles[category][0].source}</span>
+                              <span>{groupedArticles[category][0].published_at ? 
+                                new Date(groupedArticles[category][0].published_at).toLocaleDateString() : ''}
                               </span>
                             </div>
                           </div>
@@ -110,7 +122,7 @@ const Index = () => {
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
-                      {categoryArticles?.slice(1, 5).map((article) => (
+                      {groupedArticles[category]?.slice(1, 5).map((article) => (
                         <Link
                           key={article.id}
                           to={`/${category}/${article.slug}`}
