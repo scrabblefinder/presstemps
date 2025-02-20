@@ -1,6 +1,4 @@
 
-import { Link } from "react-router-dom";
-
 interface ArticleCardProps {
   title: string;
   excerpt: string;
@@ -22,7 +20,7 @@ export function ArticleCard({
 }: ArticleCardProps) {
   return (
     <article className="group bg-white border border-paper-dark/10 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-fade-up">
-      <Link to={url} className="block">
+      <a href={url} target="_blank" rel="noopener noreferrer" className="block">
         <div className="relative aspect-[16/9] overflow-hidden">
           <img
             src={image_url}
@@ -45,7 +43,7 @@ export function ArticleCard({
             <span>{published_at ? new Date(published_at).toLocaleDateString() : ''}</span>
           </div>
         </div>
-      </Link>
+      </a>
     </article>
   );
 }
