@@ -29,14 +29,9 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   const items = feed.rss.channel.item;
 
   return items.map((item: any) => {
-    // Extract the featured image from media:content
-    let image = item['media:content']?.["@_url"] || '';
-    
-    // If no media:content image, try to extract from content
-    if (!image) {
-      const imgMatch = item['content:encoded']?.match(/<img[^>]+src="([^">]+)"/);
-      image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
-    }
+    // Extract the featured image from content
+    const imgMatch = item.description?.match(/<img[^>]+src="([^">]+)"/);
+    const image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
     
     // Decode HTML entities in the title
     const decodedTitle = decodeHTMLEntities(item.title);
@@ -47,18 +42,15 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
-    // Get the full article content
-    const content = item['content:encoded'] || item.description || '';
-
     return {
       title: decodedTitle,
-      content: content,
+      content: item.description || '',
       excerpt: decodeHTMLEntities(item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...') || '',
       image,
       category: 'Tech',
-      source: 'TechCrunch',
+      source: 'Ars Technica',
       date: new Date(item.pubDate).toISOString().split('T')[0],
-      author: item['dc:creator'] || 'TechCrunch',
+      author: item.author || 'Ars Technica',
       url: `/tech/${slug}`,
     };
   });
