@@ -1,8 +1,10 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchRSSFeed } from '@/utils/rssUtils';
 import { fetchArticles } from '@/utils/dbUtils';
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 const RSS_FEEDS = {
   tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',
@@ -10,6 +12,30 @@ const RSS_FEEDS = {
 
 export const useRSSFeed = (category?: string) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Subscribe to database changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('articles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'articles',
+        },
+        () => {
+          // Invalidate and refetch queries when any change occurs
+          queryClient.invalidateQueries({ queryKey: ['articles'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Fetch from database first
   const dbQuery = useQuery({
@@ -28,9 +54,10 @@ export const useRSSFeed = (category?: string) => {
         return [];
       }
     },
-    staleTime: 0, // Set to 0 to always fetch fresh data
-    refetchOnMount: true, // Always refetch when component mounts
-    gcTime: 0, // Don't cache data
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true, // Refetch on component mount
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    gcTime: 0, // Disable garbage collection
   });
 
   // Fetch RSS and update database in background
@@ -40,7 +67,7 @@ export const useRSSFeed = (category?: string) => {
       try {
         const result = await fetchRSSFeed(RSS_FEEDS.tech, 'tech');
         // Invalidate the articles query to show new content
-        dbQuery.refetch();
+        queryClient.invalidateQueries({ queryKey: ['articles'] });
         return result;
       } catch (error) {
         console.error('RSS fetch error:', error);
@@ -49,7 +76,7 @@ export const useRSSFeed = (category?: string) => {
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
     refetchInterval: 1000 * 60 * 10, // 10 minutes
-    gcTime: 0, // Don't cache RSS results
+    gcTime: 0, // Disable garbage collection
   });
 
   return {
