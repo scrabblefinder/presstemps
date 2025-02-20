@@ -1,6 +1,7 @@
 
 import { XMLParser } from 'fast-xml-parser';
 import { supabase } from "@/integrations/supabase/client";
+import { getCategoryId } from './dbUtils';
 
 export interface RSSArticle {
   title: string;
@@ -86,7 +87,15 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   });
 };
 
-export const fetchRSSFeed = async (url: string): Promise<RSSArticle[]> => {
+export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<RSSArticle[]> => {
+  // Get category ID first
+  const categoryId = await getCategoryId(categorySlug);
+  
+  // Create article_images bucket if it doesn't exist
+  const { error: bucketError } = await supabase.storage.createBucket('article_images', {
+    public: true,
+  });
+
   // Fetch last 50 articles from RSS feed
   const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
   const response = await fetch(proxyUrl);
@@ -106,7 +115,7 @@ export const fetchRSSFeed = async (url: string): Promise<RSSArticle[]> => {
         excerpt: article.excerpt,
         image_url: imageUrl,
         original_image_url: article.image,
-        category_id: 1, // Tech category
+        category_id: categoryId,
         source: article.source,
         author: article.author,
         published_at: article.date
