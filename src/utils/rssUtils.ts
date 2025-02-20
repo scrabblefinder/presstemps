@@ -76,9 +76,12 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
+    // Get the full content from the content:encoded field if available
+    const fullContent = item['content:encoded'] || item.description || '';
+
     return {
       title: decodedTitle,
-      content: item['content:encoded'] || item.description || '',
+      content: fullContent,
       excerpt: decodeHTMLEntities(item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...') || '',
       image,
       category: 'Tech',
