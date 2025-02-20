@@ -56,12 +56,14 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
+    parseAttributeValue: true,
+    trimValues: false, // Don't trim values to preserve formatting
+    parseTagValue: false, // Don't parse tag values to preserve HTML
   });
 
   const feed = parser.parse(xmlData);
   const items = feed.rss.channel.item;
 
-  // Take only the first 20 articles
   return items.slice(0, 20).map((item: any) => {
     let image = item['media:content']?.["@_url"];
     
@@ -77,13 +79,20 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
-    // Get the full content from the content:encoded field if available
-    const fullContent = item['content:encoded'] || item.description || '';
-    console.log('Article content length:', fullContent.length); // Debug log to check content length
+    // Get the full content from content:encoded, falling back to description
+    const fullContent = decodeHTMLEntities(item['content:encoded'] || item.description || '');
+    
+    // Remove any unwanted tracking pixels or scripts
+    const cleanContent = fullContent
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<img[^>]+height="1"[^>]*>/gi, '')
+      .replace(/<img[^>]+width="1"[^>]*>/gi, '');
+
+    console.log(`Article ${decodedTitle} content length: ${cleanContent.length}`);
 
     return {
       title: decodedTitle,
-      content: fullContent,
+      content: cleanContent,
       excerpt: decodeHTMLEntities(item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...') || '',
       image,
       category: 'Tech',
@@ -97,10 +106,7 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
 
 export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<RSSArticle[]> => {
   try {
-    // Get category ID first
     const categoryId = await getCategoryId(categorySlug);
-
-    // Fetch articles from RSS feed
     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
     const response = await fetch(proxyUrl);
     const data = await response.text();
@@ -132,6 +138,8 @@ export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<R
 
         if (error) {
           console.error('Error inserting article:', error);
+        } else {
+          console.log(`Saved article: ${article.title} with content length: ${article.content.length}`);
         }
       } catch (error) {
         console.error('Error processing article:', error);
