@@ -29,9 +29,14 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   const items = feed.rss.channel.item;
 
   return items.map((item: any) => {
-    // Extract the featured image from content
-    const imgMatch = item.description?.match(/<img[^>]+src="([^">]+)"/);
-    const image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
+    // Extract the featured image from the media:content tag
+    let image = item['media:content']?.["@_url"];
+    
+    // Fallback to description if media:content is not available
+    if (!image) {
+      const imgMatch = item.description?.match(/<img[^>]+src="([^">]+)"/);
+      image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
+    }
     
     // Decode HTML entities in the title
     const decodedTitle = decodeHTMLEntities(item.title);
@@ -44,7 +49,7 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
 
     return {
       title: decodedTitle,
-      content: item.description || '',
+      content: item['content:encoded'] || item.description || '',
       excerpt: decodeHTMLEntities(item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...') || '',
       image,
       category: 'Tech',
