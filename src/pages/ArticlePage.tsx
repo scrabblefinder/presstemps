@@ -13,6 +13,7 @@ const mockArticles = {
     Recent studies have demonstrated that AI algorithms can detect diseases at early stages with remarkable accuracy, sometimes outperforming human experts. From analyzing medical imaging to predicting patient outcomes, AI is becoming an invaluable tool in modern medicine.
 
     However, experts emphasize that AI should complement, not replace, healthcare professionals. The human element in healthcare remains crucial, with AI serving as a powerful tool to enhance decision-making and improve efficiency.`,
+    excerpt: "Artificial Intelligence is revolutionizing healthcare with breakthrough innovations in diagnosis and treatment...",
     image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800",
     category: "Tech",
     source: "TechCrunch",
@@ -26,6 +27,7 @@ const mockArticles = {
     Investors are closely monitoring these developments, with particular attention to emerging markets and technological sectors. The interconnected nature of modern markets means that policy changes in one region can have far-reaching effects globally.
 
     Analysts suggest maintaining a diversified portfolio while keeping an eye on key economic indicators that could signal major market shifts.`,
+    excerpt: "Markets worldwide show resilience as central banks adjust policies...",
     image: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800",
     category: "Business",
     source: "Reuters",
@@ -39,6 +41,7 @@ const mockArticles = {
     Using advanced telescopes and sophisticated analysis techniques, scientists have identified several previously unknown celestial bodies that could potentially harbor conditions suitable for life.
 
     These findings open new avenues for research and raise intriguing questions about our place in the cosmos. The international space community is already planning follow-up missions to investigate these discoveries further.`,
+    excerpt: "NASA's latest mission reveals unprecedented findings about distant galaxies...",
     image: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?auto=format&fit=crop&w=800",
     category: "Science",
     source: "Space.com",
@@ -55,7 +58,12 @@ const getRelatedArticles = (currentSlug: string, category: string) => {
       slug !== currentSlug
     )
     .map(([slug, article]) => ({
-      ...article,
+      title: article.title,
+      excerpt: article.excerpt,
+      image: article.image,
+      category: article.category,
+      source: article.source,
+      date: article.date,
       url: `/${category.toLowerCase()}/${slug.split('/')[1]}`,
     }))
     .slice(0, 3);
