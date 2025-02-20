@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -17,7 +18,7 @@ export default function ArticlePage() {
 
   const { data: articles, isLoading: isLoadingArticles } = useQuery({
     queryKey: ['articles'],
-    queryFn: fetchArticles,
+    queryFn: () => fetchArticles(),
   });
 
   const relatedArticles = articles
@@ -72,7 +73,7 @@ export default function ArticlePage() {
           <header className="mb-8">
             <div className="mb-4">
               <span className="text-sm font-medium text-ink-light">
-                {category}
+                {article.categories?.name || category}
               </span>
             </div>
             <h1 className="font-playfair text-4xl md:text-5xl font-bold text-ink-dark mb-4">
@@ -113,10 +114,10 @@ export default function ArticlePage() {
                   title={article.title}
                   excerpt={article.excerpt || ''}
                   image_url={article.image_url}
-                  category="Tech"
+                  category={article.categories?.name || ''}
                   source={article.source}
                   published_at={article.published_at}
-                  url={`/tech/${article.slug}`}
+                  url={`/${article.categories?.slug || 'tech'}/${article.slug}`}
                 />
               ))}
             </div>
