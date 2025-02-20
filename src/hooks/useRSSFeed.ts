@@ -8,14 +8,7 @@ const RSS_FEEDS = {
 };
 
 export const useRSSFeed = (category?: string) => {
-  // First fetch from database
-  const dbQuery = useQuery({
-    queryKey: ['articles', category],
-    queryFn: () => fetchArticles(category),
-    staleTime: 1000 * 60 * 10, // 10 minutes
-  });
-
-  // Also fetch from RSS and update database
+  // First fetch RSS and update database
   const rssQuery = useQuery({
     queryKey: ['rss-feed', category],
     queryFn: () => {
@@ -29,6 +22,14 @@ export const useRSSFeed = (category?: string) => {
     refetchOnMount: true, // Force fetch on mount
     refetchInterval: 1000 * 60 * 10, // 10 minutes
     retry: 3,
+  });
+
+  // Then fetch from database
+  const dbQuery = useQuery({
+    queryKey: ['articles', category],
+    queryFn: () => fetchArticles(category),
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    enabled: !rssQuery.isLoading, // Only fetch from DB after RSS is done
   });
 
   return dbQuery;
