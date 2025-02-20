@@ -55,14 +55,14 @@ export const CategorySection = ({ category, articles }: CategorySectionProps) =>
           </a>
         )}
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           {articles.slice(1, 5).map((article) => (
             <a
               key={article.url}
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block"
+              className="group"
             >
               <article className="h-full">
                 <h4 className="text-sm font-medium text-ink-light group-hover:text-ink-dark transition-colors line-clamp-3">

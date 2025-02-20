@@ -4,14 +4,14 @@ import { fetchRSSFeeds } from '@/utils/rssUtils';
 import { useToast } from "@/components/ui/use-toast";
 
 const RSS_FEEDS = {
-  tech: 'https://techcrunch.com/feed/',
-  sports: 'https://www.espn.com/espn/rss/news',
-  entertainment: 'https://variety.com/feed/',
-  lifestyle: 'https://www.today.com/lifestyle/rss',
-  business: 'https://www.cnbc.com/id/10001147/device/rss/rss.html',
-  us: 'https://www.cbsnews.com/latest/rss/us',
-  world: 'https://www.cbsnews.com/latest/rss/world',
-  politics: 'https://www.cbsnews.com/latest/rss/politics'
+  politics: 'https://feeds.feedburner.com/dailykos/index',
+  tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',
+  sports: 'https://api.foxsports.com/v1/rss?partnerKey=zBaFxRyGKCfxBagJG9b8pqLyndmvo7UU',
+  entertainment: 'https://www.engadget.com/rss.xml',
+  lifestyle: 'https://www.lifehacker.com/rss',
+  business: 'https://feeds.feedburner.com/entrepreneur/latest',
+  us: 'https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best',
+  world: 'http://feeds.bbci.co.uk/news/world/rss.xml'
 };
 
 export const useRSSFeed = (category?: string) => {
@@ -23,14 +23,12 @@ export const useRSSFeed = (category?: string) => {
       try {
         if (category && RSS_FEEDS[category as keyof typeof RSS_FEEDS]) {
           const results = await fetchRSSFeeds(RSS_FEEDS[category as keyof typeof RSS_FEEDS], category);
-          console.log(`Fetched ${category} articles:`, results);
           if (results.length === 0) {
             console.warn(`No articles found for category: ${category}`);
           }
           return results;
         }
         if (!category) {
-          console.log('Fetching all categories...');
           const results = await Promise.allSettled(
             Object.entries(RSS_FEEDS).map(([cat, url]) => 
               fetchRSSFeeds(url, cat)
@@ -39,15 +37,12 @@ export const useRSSFeed = (category?: string) => {
           
           const allArticles = results.reduce((acc, result, index) => {
             if (result.status === 'fulfilled') {
-              console.log(`Successfully fetched ${Object.keys(RSS_FEEDS)[index]}:`, result.value.length, 'articles');
               return [...acc, ...result.value];
             } else {
               console.error(`Failed to fetch ${Object.keys(RSS_FEEDS)[index]}:`, result.reason);
               return acc;
             }
           }, []);
-
-          console.log('Total articles fetched:', allArticles.length);
 
           if (allArticles.length === 0) {
             toast({
@@ -67,7 +62,7 @@ export const useRSSFeed = (category?: string) => {
           description: "Please try again later",
           variant: "destructive"
         });
-        throw error;
+        return [];
       }
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
@@ -76,7 +71,7 @@ export const useRSSFeed = (category?: string) => {
   });
 
   return {
-    data: data || [],
+    data,
     isLoading,
     error,
   };
