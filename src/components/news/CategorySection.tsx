@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Clock } from "lucide-react";
 import { RSSArticle } from "@/utils/rssUtils";
 
 interface CategorySectionProps {
@@ -10,9 +10,9 @@ interface CategorySectionProps {
 
 export const CategorySection = ({ category, articles }: CategorySectionProps) => {
   return (
-    <section className="relative">
+    <section className="bg-white rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-playfair text-2xl font-semibold text-ink-dark capitalize border-b-2 border-ink-dark/10 pb-2">
+        <h2 className="font-playfair text-2xl font-semibold text-ink-dark capitalize">
           {category}
         </h2>
         <Button
@@ -48,7 +48,10 @@ export const CategorySection = ({ category, articles }: CategorySectionProps) =>
                 </h3>
                 <div className="mt-2 flex items-center gap-3 text-xs text-paper-light/80">
                   <span>{articles[0].source}</span>
-                  <span>{new Date(articles[0].date).toLocaleDateString()}</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{new Date(articles[0].date).toLocaleDateString()}</span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -56,7 +59,7 @@ export const CategorySection = ({ category, articles }: CategorySectionProps) =>
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          {articles.slice(1, 5).map((article) => (
+          {articles.slice(1, 3).map((article) => (
             <a
               key={article.url}
               href={article.url}
