@@ -36,7 +36,10 @@ const downloadAndUploadImage = async (imageUrl: string, slug: string) => {
         upsert: true
       });
       
-    if (error) throw error;
+    if (error) {
+      console.error('Storage upload error:', error);
+      return imageUrl; // Fallback to original URL if upload fails
+    }
     
     const { data: { publicUrl } } = supabase.storage
       .from('article_images')
@@ -88,42 +91,51 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
 };
 
 export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<RSSArticle[]> => {
-  // Get category ID first
-  const categoryId = await getCategoryId(categorySlug);
-  
-  // Create article_images bucket if it doesn't exist
-  const { error: bucketError } = await supabase.storage.createBucket('article_images', {
-    public: true,
-  });
+  try {
+    // Get category ID first
+    const categoryId = await getCategoryId(categorySlug);
 
-  // Fetch last 50 articles from RSS feed
-  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-  const response = await fetch(proxyUrl);
-  const data = await response.text();
-  const articles = parseRSSFeed(data);
-  
-  // Save articles to database
-  for (const article of articles) {
-    const imageUrl = await downloadAndUploadImage(article.image, article.url.split('/').pop()!);
+    // Fetch last 50 articles from RSS feed
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
+    const data = await response.text();
+    const articles = parseRSSFeed(data);
     
-    await supabase
-      .from('articles')
-      .upsert({
-        title: article.title,
-        slug: article.url.split('/').pop(),
-        content: article.content,
-        excerpt: article.excerpt,
-        image_url: imageUrl,
-        original_image_url: article.image,
-        category_id: categoryId,
-        source: article.source,
-        author: article.author,
-        published_at: article.date
-      }, {
-        onConflict: 'slug',
-        ignoreDuplicates: false
-      });
+    console.log('Parsed articles:', articles.length);
+
+    // Save articles to database
+    for (const article of articles) {
+      try {
+        const imageUrl = await downloadAndUploadImage(article.image, article.url.split('/').pop()!);
+        
+        const { error } = await supabase
+          .from('articles')
+          .upsert({
+            title: article.title,
+            slug: article.url.split('/').pop(),
+            content: article.content,
+            excerpt: article.excerpt,
+            image_url: imageUrl,
+            original_image_url: article.image,
+            category_id: categoryId,
+            source: article.source,
+            author: article.author,
+            published_at: article.date
+          }, {
+            onConflict: 'slug'
+          });
+
+        if (error) {
+          console.error('Error inserting article:', error);
+        }
+      } catch (error) {
+        console.error('Error processing article:', error);
+      }
+    }
+    
+    return articles;
+  } catch (error) {
+    console.error('Error in fetchRSSFeed:', error);
+    throw error;
   }
-  
-  return articles;
 };
