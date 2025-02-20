@@ -8,6 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 const RSS_FEEDS = {
   tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',
+  sports: 'https://www.espn.com/espn/rss/news',
+  entertainment: 'https://variety.com/feed/',
+  lifestyle: 'https://www.lifehacker.com/rss',
+  business: 'https://feeds.feedburner.com/entrepreneur/latest',
 };
 
 export const useRSSFeed = (category?: string) => {
@@ -54,10 +58,10 @@ export const useRSSFeed = (category?: string) => {
         return [];
       }
     },
-    staleTime: 0, // Always consider data stale
-    refetchOnMount: true, // Refetch on component mount
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    gcTime: 0, // Disable garbage collection
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    gcTime: 0,
   });
 
   // Fetch RSS and update database in background
@@ -65,10 +69,22 @@ export const useRSSFeed = (category?: string) => {
     queryKey: ['rss-feed', category],
     queryFn: async () => {
       try {
-        const result = await fetchRSSFeed(RSS_FEEDS.tech, 'tech');
-        // Invalidate the articles query to show new content
-        queryClient.invalidateQueries({ queryKey: ['articles'] });
-        return result;
+        if (category && RSS_FEEDS[category as keyof typeof RSS_FEEDS]) {
+          const result = await fetchRSSFeed(RSS_FEEDS[category as keyof typeof RSS_FEEDS], category);
+          queryClient.invalidateQueries({ queryKey: ['articles'] });
+          return result;
+        }
+        // If no category specified or on homepage, fetch all feeds
+        if (!category) {
+          const allResults = await Promise.all(
+            Object.entries(RSS_FEEDS).map(([cat, url]) => 
+              fetchRSSFeed(url, cat)
+            )
+          );
+          queryClient.invalidateQueries({ queryKey: ['articles'] });
+          return allResults.flat();
+        }
+        return [];
       } catch (error) {
         console.error('RSS fetch error:', error);
         return [];
@@ -76,7 +92,7 @@ export const useRSSFeed = (category?: string) => {
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
     refetchInterval: 1000 * 60 * 10, // 10 minutes
-    gcTime: 0, // Disable garbage collection
+    gcTime: 0,
   });
 
   return {

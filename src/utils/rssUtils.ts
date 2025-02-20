@@ -15,6 +15,14 @@ export interface RSSArticle {
   url: string;
 }
 
+const RSS_SOURCES = {
+  tech: 'Ars Technica',
+  sports: 'ESPN',
+  entertainment: 'Variety',
+  lifestyle: 'Lifehacker',
+  business: 'Entrepreneur',
+};
+
 const decodeHTMLEntities = (text: string): string => {
   const textarea = document.createElement('textarea');
   textarea.innerHTML = text;
@@ -38,7 +46,7 @@ const downloadAndUploadImage = async (imageUrl: string, slug: string) => {
       
     if (error) {
       console.error('Storage upload error:', error);
-      return imageUrl; // Fallback to original URL if upload fails
+      return imageUrl;
     }
     
     const { data: { publicUrl } } = supabase.storage
@@ -48,11 +56,22 @@ const downloadAndUploadImage = async (imageUrl: string, slug: string) => {
     return publicUrl;
   } catch (error) {
     console.error('Error downloading/uploading image:', error);
-    return imageUrl; // Fallback to original URL if upload fails
+    return imageUrl;
   }
 };
 
-export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
+const getDefaultImage = (category: string) => {
+  const defaultImages = {
+    tech: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
+    sports: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211',
+    entertainment: 'https://images.unsplash.com/photo-1586899028174-e7098604235b',
+    lifestyle: 'https://images.unsplash.com/photo-1511988617509-a57c8a288659',
+    business: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f',
+  };
+  return defaultImages[category as keyof typeof defaultImages] || defaultImages.tech;
+};
+
+export const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] => {
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
@@ -67,11 +86,13 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   const items = feed.rss.channel.item;
 
   return items.slice(0, 20).map((item: any) => {
-    let image = item['media:content']?.["@_url"];
+    let image = item['media:content']?.["@_url"] || 
+                item['media:thumbnail']?.["@_url"] ||
+                item.enclosure?.["@_url"];
     
     if (!image) {
       const imgMatch = item.description?.match(/<img[^>]+src="([^">]+)"/);
-      image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
+      image = imgMatch ? imgMatch[1] : getDefaultImage(category);
     }
     
     const decodedTitle = decodeHTMLEntities(item.title);
@@ -81,7 +102,6 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
-    // Get the full content from content:encoded field
     let fullContent = '';
     if (item['content:encoded']) {
       fullContent = typeof item['content:encoded'] === 'object' ? 
@@ -93,27 +113,27 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
 
     fullContent = decodeHTMLEntities(fullContent);
     
-    // Clean the content more thoroughly
     const cleanContent = fullContent
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<img[^>]+height="1"[^>]*>/gi, '')
       .replace(/<img[^>]+width="1"[^>]*>/gi, '')
-      // Remove "Read full article" and "Comments" links and their containing paragraphs
       .replace(/<p>\s*<a[^>]*>Read full article<\/a>\s*<\/p>/gi, '')
       .replace(/<p>\s*<a[^>]*>Comments<\/a>\s*<\/p>/gi, '')
       .replace(/\r?\n|\r/g, '')
       .trim();
+
+    const source = RSS_SOURCES[category as keyof typeof RSS_SOURCES] || category;
 
     return {
       title: decodedTitle,
       content: cleanContent,
       excerpt: decodeHTMLEntities(item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...') || '',
       image,
-      category: 'Tech',
-      source: 'Ars Technica',
+      category,
+      source,
       date: new Date(item.pubDate).toISOString(),
-      author: item.author || 'Ars Technica',
-      url: `/tech/${slug}`,
+      author: item.author || source,
+      url: `/${category}/${slug}`,
     };
   });
 };
@@ -124,9 +144,9 @@ export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<R
     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
     const response = await fetch(proxyUrl);
     const data = await response.text();
-    const articles = parseRSSFeed(data);
+    const articles = parseRSSFeed(data, categorySlug);
     
-    console.log('Parsed articles:', articles.length);
+    console.log(`Fetched ${articles.length} articles for ${categorySlug}`);
 
     for (const article of articles) {
       try {
@@ -152,7 +172,7 @@ export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<R
         if (error) {
           console.error('Error inserting article:', error);
         } else {
-          console.log(`Saved article: ${article.title} with content length: ${article.content.length}`);
+          console.log(`Saved article: ${article.title}`);
         }
       } catch (error) {
         console.error('Error processing article:', error);
