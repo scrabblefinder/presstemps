@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { ArticleCard } from "@/components/ArticleCard";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { Skeleton } from "@/components/ui/skeleton";
+import DOMPurify from 'dompurify';
 
 export default function ArticlePage() {
   const { category = "", slug = "" } = useParams<{ category: string; slug: string }>();
@@ -50,6 +51,8 @@ export default function ArticlePage() {
     );
   }
 
+  const sanitizedContent = DOMPurify.sanitize(article.content);
+
   return (
     <div className="min-h-screen bg-paper-light flex flex-col">
       <Header />
@@ -81,8 +84,9 @@ export default function ArticlePage() {
             />
           </div>
 
-          <div className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+          <div 
+            className="prose prose-lg max-w-none prose-headings:font-playfair prose-headings:font-semibold prose-a:text-blue-600 hover:prose-a:text-blue-800"
+            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
         </article>
 
