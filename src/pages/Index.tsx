@@ -5,22 +5,10 @@ import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { useState } from "react";
 import { RSSArticle } from "@/utils/rssUtils";
 import { LoadingSkeleton } from "@/components/news/LoadingSkeleton";
-import { CategorySection } from "@/components/news/CategorySection";
 import { ArticleList } from "@/components/news/ArticleList";
 import { Pagination } from "@/components/news/Pagination";
 
 const ARTICLES_PER_PAGE = 10;
-
-const CATEGORY_ORDER = [
-  'politics',
-  'sports',
-  'business',
-  'tech',
-  'entertainment',
-  'lifestyle',
-  'us',
-  'world'
-];
 
 const calculateReadingTime = (date: string): number => {
   if (!date) return 3; // Default reading time
@@ -35,17 +23,7 @@ const Index = () => {
   const { data: articles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const groupedArticles = articles?.reduce((acc, article) => {
-    if (!acc[article.category]) {
-      acc[article.category] = [];
-    }
-    acc[article.category].push(article);
-    return acc;
-  }, {} as Record<string, RSSArticle[]>);
-
-  const orderedCategories = CATEGORY_ORDER.filter(category => groupedArticles?.[category]);
-
-  const allArticles = articles?.slice(30) || []; // After the first 30 articles used in categories
+  const allArticles = articles || [];
   const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = allArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
@@ -63,38 +41,26 @@ const Index = () => {
             <p className="text-ink-light">Failed to load articles. Please try again later.</p>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-              {orderedCategories.map(category => (
-                <CategorySection
-                  key={category}
-                  category={category}
-                  articles={groupedArticles[category]}
-                />
-              ))}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <ArticleList 
+                articles={paginatedArticles}
+                calculateReadingTime={calculateReadingTime}
+              />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
-                <ArticleList 
-                  articles={paginatedArticles}
-                  calculateReadingTime={calculateReadingTime}
-                />
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+            <aside className="lg:col-span-1">
+              <div className="sticky top-4 bg-white rounded-lg p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-4 text-ink-dark">Sidebar</h2>
+                <p className="text-ink-light">Content coming soon...</p>
               </div>
-
-              <aside className="lg:col-span-1">
-                <div className="sticky top-4 bg-white rounded-lg p-6 shadow-sm">
-                  <h2 className="text-xl font-semibold mb-4 text-ink-dark">Sidebar</h2>
-                  <p className="text-ink-light">Content coming soon...</p>
-                </div>
-              </aside>
-            </div>
-          </>
+            </aside>
+          </div>
         )}
       </main>
       <Footer />
