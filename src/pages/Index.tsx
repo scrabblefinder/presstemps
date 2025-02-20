@@ -2,7 +2,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RSSArticle } from "@/utils/rssUtils";
 import { LoadingSkeleton } from "@/components/news/LoadingSkeleton";
 import { CategorySection } from "@/components/news/CategorySection";
@@ -39,15 +39,28 @@ const Index = () => {
   const { data: articles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
 
+  useEffect(() => {
+    // Add logging to help diagnose issues
+    console.log('Articles data:', articles);
+    console.log('Loading state:', isLoading);
+    console.log('Error state:', error);
+  }, [articles, isLoading, error]);
+
   const groupedArticles = articles?.reduce((acc, article) => {
     if (!acc[article.category]) {
       acc[article.category] = [];
     }
     acc[article.category].push(article);
     return acc;
-  }, {} as Record<string, RSSArticle[]>);
+  }, {} as Record<string, RSSArticle[]>) || {};
 
-  const orderedCategories = CATEGORY_ORDER.filter(category => groupedArticles?.[category]);
+  const orderedCategories = CATEGORY_ORDER.filter(category => groupedArticles[category]?.length > 0);
+
+  // Log grouped articles and categories for debugging
+  useEffect(() => {
+    console.log('Grouped articles:', groupedArticles);
+    console.log('Ordered categories:', orderedCategories);
+  }, [groupedArticles]);
 
   const allArticles = articles?.slice(30) || []; // After the first 30 articles used in categories
   const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
@@ -65,13 +78,18 @@ const Index = () => {
         ) : error ? (
           <div className="text-center py-12">
             <p className="text-ink-light">Failed to load articles. Please try again later.</p>
+            <p className="text-sm text-ink-light/75 mt-2">{error.toString()}</p>
+          </div>
+        ) : !articles || articles.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-ink-light">No articles found. Please try again later.</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
               {orderedCategories.map(category => {
                 const articleList = groupedArticles[category];
-                if (!articleList) return null;
+                if (!articleList?.length) return null;
 
                 if (FEATURED_CATEGORIES.includes(category)) {
                   return (
