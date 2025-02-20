@@ -24,14 +24,11 @@ const CATEGORY_ORDER = [
   'lifestyle'
 ];
 
-const FEATURED_CATEGORIES = ['us', 'world'];
-
 const calculateReadingTime = (date: string): number => {
-  if (!date) return 3; // Default reading time
+  if (!date) return 3;
   const now = new Date();
   const published = new Date(date);
   const diffInMinutes = Math.ceil((now.getTime() - published.getTime()) / (1000 * 60));
-  // Cap reading time between 2 and 8 minutes
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
 };
 
@@ -40,7 +37,6 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    // Add logging to help diagnose issues
     console.log('Articles data:', articles);
     console.log('Loading state:', isLoading);
     console.log('Error state:', error);
@@ -56,13 +52,12 @@ const Index = () => {
 
   const orderedCategories = CATEGORY_ORDER.filter(category => groupedArticles[category]?.length > 0);
 
-  // Log grouped articles and categories for debugging
   useEffect(() => {
     console.log('Grouped articles:', groupedArticles);
     console.log('Ordered categories:', orderedCategories);
   }, [groupedArticles]);
 
-  const allArticles = articles?.slice(30) || []; // After the first 30 articles used in categories
+  const allArticles = articles?.slice(30) || [];
   const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = allArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
@@ -91,15 +86,6 @@ const Index = () => {
                 const articleList = groupedArticles[category];
                 if (!articleList?.length) return null;
 
-                if (FEATURED_CATEGORIES.includes(category)) {
-                  return (
-                    <CategorySection
-                      key={category}
-                      category={category}
-                      articles={articleList}
-                    />
-                  );
-                }
                 return (
                   <div key={category} className="relative">
                     <div className="flex items-center justify-between mb-6">
@@ -117,8 +103,35 @@ const Index = () => {
                         </a>
                       </Button>
                     </div>
+
+                    {articleList[0] && (
+                      <a
+                        href={articleList[0].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block group mb-6"
+                      >
+                        <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-3">
+                          <img
+                            src={articleList[0].image}
+                            alt={articleList[0].title}
+                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <h3 className="text-base font-medium line-clamp-2 text-white group-hover:text-paper-light transition-colors">
+                              {articleList[0].title}
+                            </h3>
+                            <div className="mt-2 flex items-center gap-2 text-xs text-paper-light/80">
+                              <span>{articleList[0].source}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </a>
+                    )}
+
                     <div className="space-y-4">
-                      {articleList.slice(0, 5).map((article) => (
+                      {articleList.slice(1, 5).map((article) => (
                         <a
                           key={article.url}
                           href={article.url}
@@ -127,7 +140,7 @@ const Index = () => {
                           className="group block"
                         >
                           <article className="h-full">
-                            <h4 className="text-sm font-medium text-ink-light group-hover:text-ink-dark transition-colors line-clamp-3">
+                            <h4 className="text-sm font-medium text-ink-light group-hover:text-ink-dark transition-colors line-clamp-2">
                               {article.title}
                             </h4>
                             <div className="mt-2 flex items-center gap-2 text-xs text-ink-light/75">
