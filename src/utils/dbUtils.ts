@@ -32,6 +32,8 @@ export const saveArticle = async (article: Omit<Article, 'id' | 'created_at' | '
 };
 
 export const fetchArticles = async (category?: string) => {
+  console.log('Fetching articles for category:', category); // Add logging
+
   let query = supabase
     .from('articles')
     .select(`
@@ -57,7 +59,12 @@ export const fetchArticles = async (category?: string) => {
 
   const { data, error } = await query;
 
-  if (error) throw error;
+  if (error) {
+    console.error('Supabase query error:', error); // Add logging
+    throw error;
+  }
+  
+  console.log('Query result:', data); // Add logging
   return data as (Article & { categories: { name: string; slug: string } })[];
 };
 

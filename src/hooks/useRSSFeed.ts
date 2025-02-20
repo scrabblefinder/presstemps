@@ -17,11 +17,8 @@ export const useRSSFeed = (category?: string) => {
     queryFn: async () => {
       try {
         // For now, we only have the tech feed
-        if (category === 'tech' || !category) {
-          const result = await fetchRSSFeed(RSS_FEEDS.tech, 'tech');
-          return result;
-        }
-        return [];
+        const result = await fetchRSSFeed(RSS_FEEDS.tech, 'tech');
+        return result;
       } catch (error) {
         console.error('RSS fetch error:', error);
         toast({
@@ -42,6 +39,7 @@ export const useRSSFeed = (category?: string) => {
     queryFn: async () => {
       try {
         const articles = await fetchArticles(category);
+        console.log('Fetched articles:', articles); // Add logging
         return articles;
       } catch (error) {
         console.error('Database fetch error:', error);
