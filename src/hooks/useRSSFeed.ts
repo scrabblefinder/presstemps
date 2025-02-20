@@ -22,15 +22,37 @@ export const useRSSFeed = (category?: string) => {
     queryFn: async () => {
       try {
         if (category && RSS_FEEDS[category as keyof typeof RSS_FEEDS]) {
-          return await fetchRSSFeeds(RSS_FEEDS[category as keyof typeof RSS_FEEDS], category);
+          const results = await fetchRSSFeeds(RSS_FEEDS[category as keyof typeof RSS_FEEDS], category);
+          if (results.length === 0) {
+            console.warn(`No articles found for category: ${category}`);
+          }
+          return results;
         }
         if (!category) {
-          const allResults = await Promise.all(
+          const results = await Promise.allSettled(
             Object.entries(RSS_FEEDS).map(([cat, url]) => 
               fetchRSSFeeds(url, cat)
             )
           );
-          return allResults.flat();
+          
+          const allArticles = results.reduce((acc, result, index) => {
+            if (result.status === 'fulfilled') {
+              return [...acc, ...result.value];
+            } else {
+              console.error(`Failed to fetch ${Object.keys(RSS_FEEDS)[index]}:`, result.reason);
+              return acc;
+            }
+          }, []);
+
+          if (allArticles.length === 0) {
+            toast({
+              title: "No articles found",
+              description: "Please try again later",
+              variant: "destructive"
+            });
+          }
+
+          return allArticles;
         }
         return [];
       } catch (error) {
@@ -45,6 +67,7 @@ export const useRSSFeed = (category?: string) => {
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
     refetchInterval: 1000 * 60 * 10, // 10 minutes
+    retry: 2,
   });
 
   return {

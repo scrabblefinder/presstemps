@@ -43,7 +43,8 @@ const getDefaultImage = (category: string) => {
   return defaultImages[category as keyof typeof defaultImages] || defaultImages.tech;
 };
 
-const extractImageFromContent = (content: string): string | null => {
+const extractImageFromContent = (content: string | undefined): string | null => {
+  if (!content || typeof content !== 'string') return null;
   const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
   return imgMatch ? imgMatch[1] : null;
 };
@@ -53,62 +54,71 @@ const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] => {
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
     parseAttributeValue: true,
-    trimValues: false,
+    trimValues: true,
     parseTagValue: false,
-    processEntities: false,
   });
 
-  const feed = parser.parse(xmlData);
-  const items = feed.rss.channel.item;
-
-  return items.slice(0, 20).map((item: any) => {
-    let fullContent = item['content:encoded'] || 
-                     item.content || 
-                     item.description || 
-                     '';
-
-    if (typeof fullContent === 'object') {
-      fullContent = fullContent['#text'] || fullContent.toString() || '';
-    }
-
-    if (category === 'sports' && item.description) {
-      fullContent = item.description;
-    }
-
-    let image = item['media:content']?.["@_url"] || 
-                item['media:thumbnail']?.["@_url"] ||
-                item.enclosure?.["@_url"] ||
-                extractImageFromContent(fullContent) ||
-                extractImageFromContent(item.description || '');
-
-    if (category === 'sports' && !image) {
-      const mediaGroup = item['media:group'];
-      if (mediaGroup && mediaGroup['media:content']) {
-        const mediaContent = Array.isArray(mediaGroup['media:content']) 
-          ? mediaGroup['media:content'][0] 
-          : mediaGroup['media:content'];
-        image = mediaContent?.["@_url"] || null;
-      }
-    }
-
-    if (!image) {
-      image = getDefaultImage(category);
-    }
-
-    const decodedTitle = decodeHTMLEntities(item.title);
-    const source = RSS_SOURCES[category as keyof typeof RSS_SOURCES] || category;
+  try {
+    const feed = parser.parse(xmlData);
+    const channel = feed?.rss?.channel || feed?.feed || feed;
     
-    return {
-      title: decodedTitle,
-      excerpt: decodeHTMLEntities(item.description?.replace(/<[^>]+>/g, '').slice(0, 150) + '...') || '',
-      image,
-      category,
-      source,
-      date: new Date(item.pubDate).toISOString(),
-      author: item.author || source,
-      url: item.link || item.guid || '',
-    };
-  });
+    if (!channel) {
+      console.error('Invalid feed structure:', feed);
+      return [];
+    }
+
+    const items = channel.item || channel.entry || [];
+    const itemArray = Array.isArray(items) ? items : [items];
+
+    return itemArray.slice(0, 20).map((item: any) => {
+      let fullContent = '';
+      
+      // Handle different content fields
+      if (item['content:encoded']) {
+        fullContent = item['content:encoded'];
+      } else if (item.content) {
+        fullContent = typeof item.content === 'string' ? item.content : item.content['#text'] || '';
+      } else if (item.description) {
+        fullContent = item.description;
+      }
+
+      // Handle different image locations
+      let image = null;
+      if (item['media:content']) {
+        const mediaContent = Array.isArray(item['media:content']) 
+          ? item['media:content'][0] 
+          : item['media:content'];
+        image = mediaContent?.["@_url"];
+      } else if (item['media:thumbnail']) {
+        image = item['media:thumbnail']?.["@_url"];
+      } else if (item.enclosure) {
+        image = item.enclosure?.["@_url"];
+      }
+
+      if (!image) {
+        image = extractImageFromContent(fullContent) || 
+               extractImageFromContent(item.description) || 
+               getDefaultImage(category);
+      }
+
+      const title = typeof item.title === 'string' ? item.title : item.title?.['#text'] || '';
+      const description = typeof item.description === 'string' ? item.description : item.description?.['#text'] || '';
+      
+      return {
+        title: decodeHTMLEntities(title),
+        excerpt: decodeHTMLEntities(description.replace(/<[^>]+>/g, '').slice(0, 150) + '...'),
+        image,
+        category,
+        source: RSS_SOURCES[category as keyof typeof RSS_SOURCES] || category,
+        date: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
+        author: item.author || item.creator || RSS_SOURCES[category as keyof typeof RSS_SOURCES],
+        url: item.link || item.guid || '',
+      };
+    }).filter(item => item.title && item.url);
+  } catch (error) {
+    console.error('Error parsing RSS feed:', error);
+    return [];
+  }
 };
 
 export const fetchRSSFeeds = async (url: string, categorySlug: string): Promise<RSSArticle[]> => {
