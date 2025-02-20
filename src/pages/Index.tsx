@@ -1,11 +1,12 @@
+
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "react-router-dom";
 import { ExternalLink, Clock3, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { RSSArticle } from "@/utils/rssUtils";
 
 const ARTICLES_PER_PAGE = 10;
 
@@ -20,10 +21,10 @@ const CATEGORY_ORDER = [
   'world'
 ];
 
-const calculateReadingTime = (publishedAt: string | null): number => {
-  if (!publishedAt) return 3; // Default reading time
+const calculateReadingTime = (date: string): number => {
+  if (!date) return 3; // Default reading time
   const now = new Date();
-  const published = new Date(publishedAt);
+  const published = new Date(date);
   const diffInMinutes = Math.ceil((now.getTime() - published.getTime()) / (1000 * 60));
   // Cap reading time between 2 and 8 minutes
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
@@ -34,13 +35,12 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const groupedArticles = articles?.reduce((acc, article) => {
-    const category = article.categories?.slug || 'tech';
-    if (!acc[category]) {
-      acc[category] = [];
+    if (!acc[article.category]) {
+      acc[article.category] = [];
     }
-    acc[category].push(article);
+    acc[article.category].push(article);
     return acc;
-  }, {} as Record<string, typeof articles>);
+  }, {} as Record<string, RSSArticle[]>);
 
   const orderedCategories = CATEGORY_ORDER.filter(category => groupedArticles?.[category]);
 
@@ -82,23 +82,29 @@ const Index = () => {
                     <h2 className="font-playfair text-2xl font-semibold text-ink-dark capitalize border-b-2 border-ink-dark/10 pb-2">
                       {category}
                     </h2>
-                    <Link 
-                      to={`/${category}`}
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="text-xs font-medium text-ink hover:text-ink-dark transition-colors"
+                      asChild
                     >
-                      More articles <ExternalLink className="inline w-3 h-3 ml-1" />
-                    </Link>
+                      <a href={`/${category}`} className="flex items-center gap-1">
+                        More articles <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </Button>
                   </div>
 
                   <div className="space-y-6">
                     {groupedArticles[category]?.[0] && (
-                      <Link 
-                        to={`/${category}/${groupedArticles[category][0].slug}`}
+                      <a 
+                        href={groupedArticles[category][0].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="block group"
                       >
                         <div className="relative aspect-video rounded-lg overflow-hidden mb-4">
                           <img
-                            src={groupedArticles[category][0].image_url}
+                            src={groupedArticles[category][0].image}
                             alt={groupedArticles[category][0].title}
                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                           />
@@ -109,20 +115,20 @@ const Index = () => {
                             </h3>
                             <div className="mt-2 flex items-center gap-3 text-xs text-paper-light/80">
                               <span>{groupedArticles[category][0].source}</span>
-                              <span>{groupedArticles[category][0].published_at ? 
-                                new Date(groupedArticles[category][0].published_at).toLocaleDateString() : ''}
-                              </span>
+                              <span>{new Date(groupedArticles[category][0].date).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
-                      </Link>
+                      </a>
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
                       {groupedArticles[category]?.slice(1, 5).map((article) => (
-                        <Link
-                          key={article.id}
-                          to={`/${category}/${article.slug}`}
+                        <a
+                          key={article.url}
+                          href={article.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="group"
                         >
                           <article className="h-full">
@@ -133,7 +139,7 @@ const Index = () => {
                               <span>{article.source}</span>
                             </div>
                           </article>
-                        </Link>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -145,15 +151,17 @@ const Index = () => {
               <div className="lg:col-span-2">
                 <div className="space-y-8">
                   {paginatedArticles.map((article) => (
-                    <Link
-                      key={article.id}
-                      to={`/${article.categories.slug}/${article.slug}`}
+                    <a
+                      key={article.url}
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="group block"
                     >
                       <article className="flex gap-6 items-start p-4 rounded-lg hover:bg-white transition-colors">
                         <div className="flex-shrink-0 w-48 h-32 overflow-hidden rounded-lg">
                           <img
-                            src={article.image_url}
+                            src={article.image}
                             alt={article.title}
                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                           />
@@ -161,7 +169,7 @@ const Index = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 text-sm mb-2">
                             <span className="text-blue-600 font-medium">
-                              {article.categories.slug.toUpperCase()}
+                              {article.category.toUpperCase()}
                             </span>
                             <span className="text-ink-light">•</span>
                             <span className="text-ink-light">{article.source}</span>
@@ -174,11 +182,11 @@ const Index = () => {
                           </p>
                           <div className="flex items-center gap-2 text-xs text-ink-light">
                             <Clock3 className="w-3 h-3" />
-                            <span>{calculateReadingTime(article.published_at)} min read</span>
+                            <span>{calculateReadingTime(article.date)} min read</span>
                           </div>
                         </div>
                       </article>
-                    </Link>
+                    </a>
                   ))}
                 </div>
 
