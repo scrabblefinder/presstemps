@@ -21,6 +21,8 @@ const RSS_SOURCES = {
   entertainment: 'Engadget',
   lifestyle: 'Lifehacker',
   business: 'Entrepreneur',
+  us: 'Reuters',
+  world: 'New York Times'
 };
 
 const decodeHTMLEntities = (text: string): string => {

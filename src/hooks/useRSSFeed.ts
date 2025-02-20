@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchRSSFeed } from '@/utils/rssUtils';
 import { fetchArticles } from '@/utils/dbUtils';
@@ -12,7 +13,7 @@ const RSS_FEEDS = {
   entertainment: 'https://www.engadget.com/rss.xml',
   lifestyle: 'https://www.lifehacker.com/rss',
   business: 'https://feeds.feedburner.com/entrepreneur/latest',
-  us: 'https://rss.nytimes.com/services/xml/rss/nyt/US.xml',
+  us: 'https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best',
   world: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
 };
 
