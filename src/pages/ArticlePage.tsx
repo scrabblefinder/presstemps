@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -113,12 +112,11 @@ export default function ArticlePage() {
                   key={article.id}
                   title={article.title}
                   excerpt={article.excerpt || ''}
-                  image={article.image_url}
+                  image_url={article.image_url}
                   category="Tech"
-                  source={article.source || ''}
-                  date={new Date(article.published_at || '').toISOString().split('T')[0]}
+                  source={article.source}
+                  published_at={article.published_at}
                   url={`/tech/${article.slug}`}
-                  author={article.author || ''}
                 />
               ))}
             </div>

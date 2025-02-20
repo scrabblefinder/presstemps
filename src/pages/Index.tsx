@@ -35,8 +35,17 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {articles?.slice(0, 50).map((article, index) => (
-                <ArticleCard key={index} {...article} />
+              {articles?.slice(0, 50).map((article) => (
+                <ArticleCard
+                  key={article.id}
+                  title={article.title}
+                  excerpt={article.excerpt || ''}
+                  image_url={article.image_url}
+                  category="Tech"
+                  source={article.source}
+                  published_at={article.published_at}
+                  url={`/tech/${article.slug}`}
+                />
               ))}
             </div>
           )}

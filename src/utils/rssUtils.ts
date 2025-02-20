@@ -87,6 +87,7 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
 };
 
 export const fetchRSSFeed = async (url: string): Promise<RSSArticle[]> => {
+  // Fetch last 50 articles from RSS feed
   const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
   const response = await fetch(proxyUrl);
   const data = await response.text();
@@ -110,7 +111,8 @@ export const fetchRSSFeed = async (url: string): Promise<RSSArticle[]> => {
         author: article.author,
         published_at: article.date
       }, {
-        onConflict: 'slug'
+        onConflict: 'slug',
+        ignoreDuplicates: false
       });
   }
   

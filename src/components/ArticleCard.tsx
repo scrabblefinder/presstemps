@@ -4,20 +4,20 @@ import { Link } from "react-router-dom";
 interface ArticleCardProps {
   title: string;
   excerpt: string;
-  image: string;
+  image_url: string;
   category: string;
-  source: string;
-  date: string;
+  source: string | null;
+  published_at: string | null;
   url: string;
 }
 
 export function ArticleCard({
   title,
   excerpt,
-  image,
+  image_url,
   category,
   source,
-  date,
+  published_at,
   url,
 }: ArticleCardProps) {
   return (
@@ -25,7 +25,7 @@ export function ArticleCard({
       <Link to={url} className="block">
         <div className="relative aspect-[16/9] overflow-hidden">
           <img
-            src={image}
+            src={image_url}
             alt={title}
             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
           />
@@ -42,7 +42,7 @@ export function ArticleCard({
           <p className="text-ink-light text-sm line-clamp-2 mb-4">{excerpt}</p>
           <div className="flex items-center justify-between text-xs text-ink-light">
             <span>{source}</span>
-            <span>{date}</span>
+            <span>{published_at ? new Date(published_at).toLocaleDateString() : ''}</span>
           </div>
         </div>
       </Link>
