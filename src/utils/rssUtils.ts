@@ -84,7 +84,6 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
     // Get the full content from content:encoded field
     let fullContent = '';
     if (item['content:encoded']) {
-      // Handle both plain text and CDATA content
       fullContent = typeof item['content:encoded'] === 'object' ? 
         item['content:encoded']['#text'] || item['content:encoded'] : 
         item['content:encoded'];
@@ -94,14 +93,16 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
 
     fullContent = decodeHTMLEntities(fullContent);
     
+    // Clean the content more thoroughly
     const cleanContent = fullContent
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<img[^>]+height="1"[^>]*>/gi, '')
       .replace(/<img[^>]+width="1"[^>]*>/gi, '')
+      // Remove "Read full article" and "Comments" links and their containing paragraphs
+      .replace(/<p>\s*<a[^>]*>Read full article<\/a>\s*<\/p>/gi, '')
+      .replace(/<p>\s*<a[^>]*>Comments<\/a>\s*<\/p>/gi, '')
       .replace(/\r?\n|\r/g, '')
       .trim();
-
-    console.log(`Article ${decodedTitle} content length: ${cleanContent.length}`);
 
     return {
       title: decodedTitle,
