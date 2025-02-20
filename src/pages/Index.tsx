@@ -2,39 +2,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ArticleCard } from "@/components/ArticleCard";
-
-// Temporary mock data - will be replaced with RSS feed data
-const mockArticles = [
-  {
-    title: "The Future of AI in Healthcare",
-    excerpt: "Artificial Intelligence is revolutionizing healthcare with breakthrough innovations in diagnosis and treatment...",
-    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800",
-    category: "Tech",
-    source: "TechCrunch",
-    date: "2024-03-10",
-    url: "/tech/the-future-of-ai-in-healthcare",
-  },
-  {
-    title: "Global Markets React to Economic Changes",
-    excerpt: "Markets worldwide show resilience as central banks adjust policies...",
-    image: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800",
-    category: "Business",
-    source: "Reuters",
-    date: "2024-03-10",
-    url: "/business/global-markets-react-to-economic-changes",
-  },
-  {
-    title: "New Discoveries in Space Exploration",
-    excerpt: "NASA's latest mission reveals unprecedented findings about distant galaxies...",
-    image: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?auto=format&fit=crop&w=800",
-    category: "Science",
-    source: "Space.com",
-    date: "2024-03-10",
-    url: "/science/new-discoveries-in-space-exploration",
-  },
-];
+import { useRSSFeed } from "@/hooks/useRSSFeed";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
+  const { data: articles, isLoading, error } = useRSSFeed();
+
   return (
     <div className="min-h-screen bg-paper-light flex flex-col">
       <Header />
@@ -42,14 +15,31 @@ const Index = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-playfair text-2xl font-semibold text-ink-dark">
-              Featured Stories
+              Latest Tech News
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockArticles.map((article, index) => (
-              <ArticleCard key={index} {...article} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="space-y-4">
+                  <Skeleton className="h-[200px] w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-ink-light">Failed to load articles. Please try again later.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {articles?.slice(0, 50).map((article, index) => (
+                <ArticleCard key={index} {...article} />
+              ))}
+            </div>
+          )}
         </section>
       </main>
       <Footer />
