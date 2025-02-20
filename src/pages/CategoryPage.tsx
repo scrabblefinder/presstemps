@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -14,7 +13,7 @@ const mockArticlesByCategory = {
       category: "Science",
       source: "Space.com",
       date: "2024-03-10",
-      url: "/article/3",
+      url: "/science/new-discoveries-in-space-exploration",
     },
     {
       title: "Breakthrough in Quantum Computing",
@@ -23,7 +22,7 @@ const mockArticlesByCategory = {
       category: "Science",
       source: "Nature",
       date: "2024-03-10",
-      url: "/article/4",
+      url: "/science/breakthrough-in-quantum-computing",
     },
   ],
   tech: [
@@ -34,7 +33,7 @@ const mockArticlesByCategory = {
       category: "Tech",
       source: "TechCrunch",
       date: "2024-03-10",
-      url: "/article/1",
+      url: "/tech/the-future-of-ai-in-healthcare",
     },
   ],
   business: [
@@ -45,7 +44,7 @@ const mockArticlesByCategory = {
       category: "Business",
       source: "Reuters",
       date: "2024-03-10",
-      url: "/article/2",
+      url: "/business/global-markets-react-to-economic-changes",
     },
   ],
 };

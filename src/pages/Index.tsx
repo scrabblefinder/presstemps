@@ -12,7 +12,7 @@ const mockArticles = [
     category: "Tech",
     source: "TechCrunch",
     date: "2024-03-10",
-    url: "/article/1",
+    url: "/tech/the-future-of-ai-in-healthcare",
   },
   {
     title: "Global Markets React to Economic Changes",
@@ -21,7 +21,7 @@ const mockArticles = [
     category: "Business",
     source: "Reuters",
     date: "2024-03-10",
-    url: "/article/2",
+    url: "/business/global-markets-react-to-economic-changes",
   },
   {
     title: "New Discoveries in Space Exploration",
@@ -30,7 +30,7 @@ const mockArticles = [
     category: "Science",
     source: "Space.com",
     date: "2024-03-10",
-    url: "/article/3",
+    url: "/science/new-discoveries-in-space-exploration",
   },
 ];
 
