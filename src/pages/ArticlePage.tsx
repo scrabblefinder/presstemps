@@ -61,8 +61,8 @@ export default function ArticlePage() {
   }
 
   const sanitizedContent = DOMPurify.sanitize(article.content, {
-    ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'blockquote', 'img'],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title']
+    ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'blockquote', 'img', 'figure', 'figcaption', 'div'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class']
   });
 
   return (
@@ -80,24 +80,30 @@ export default function ArticlePage() {
               {article.title}
             </h1>
             <div className="flex items-center gap-4 text-sm text-ink-light">
-              <span>{article.author}</span>
-              <span>•</span>
-              <span>{new Date(article.published_at || '').toLocaleDateString()}</span>
-              <span>•</span>
-              <span>{article.source}</span>
+              {article.author && <span>{article.author}</span>}
+              {article.author && <span>•</span>}
+              {article.published_at && (
+                <>
+                  <span>{new Date(article.published_at).toLocaleDateString()}</span>
+                  <span>•</span>
+                </>
+              )}
+              {article.source && <span>{article.source}</span>}
             </div>
           </header>
 
-          <div className="mb-8 rounded-lg overflow-hidden">
-            <img
-              src={article.image_url}
-              alt={article.title}
-              className="w-full h-[400px] object-cover"
-            />
-          </div>
+          {article.image_url && (
+            <div className="mb-8 rounded-lg overflow-hidden">
+              <img
+                src={article.image_url}
+                alt={article.title}
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          )}
 
           <div 
-            className="prose prose-lg max-w-none prose-headings:font-playfair prose-headings:font-semibold prose-a:text-blue-600 hover:prose-a:text-blue-800"
+            className="prose prose-lg max-w-none prose-headings:font-playfair prose-headings:font-semibold prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-img:rounded-lg prose-img:my-8"
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
         </article>
