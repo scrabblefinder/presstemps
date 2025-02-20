@@ -8,6 +8,8 @@ import { LoadingSkeleton } from "@/components/news/LoadingSkeleton";
 import { CategorySection } from "@/components/news/CategorySection";
 import { ArticleList } from "@/components/news/ArticleList";
 import { Pagination } from "@/components/news/Pagination";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 const ARTICLES_PER_PAGE = 10;
 
