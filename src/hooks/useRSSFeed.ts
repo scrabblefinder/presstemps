@@ -7,12 +7,12 @@ import { useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
 const RSS_FEEDS = {
-  politics: 'https://rss.politico.com/politics-news.xml',
-  tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',
-  sports: 'https://www.espn.com/espn/rss/news',
-  entertainment: 'https://variety.com/feed/',
-  lifestyle: 'https://www.lifehacker.com/rss',
-  business: 'https://feeds.feedburner.com/entrepreneur/latest',
+  politics: 'https://feeds.feedburner.com/dailykos/index',  // Full content RSS feed
+  tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',  // Already provides full content
+  sports: 'https://api.foxsports.com/v1/rss?partnerKey=zBaFxRyGKCfxBagJG9b8pqLyndmvo7UU',  // Better sports RSS with images
+  entertainment: 'https://www.engadget.com/rss.xml',  // Full content entertainment feed
+  lifestyle: 'https://www.lifehacker.com/rss',  // Already good
+  business: 'https://feeds.feedburner.com/entrepreneur/latest',  // Already good
 };
 
 export const useRSSFeed = (category?: string) => {

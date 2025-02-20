@@ -1,4 +1,3 @@
-
 import { XMLParser } from 'fast-xml-parser';
 import { supabase } from "@/integrations/supabase/client";
 import { getCategoryId } from './dbUtils';
@@ -16,10 +15,10 @@ export interface RSSArticle {
 }
 
 const RSS_SOURCES = {
-  politics: 'Politico',
+  politics: 'Daily Kos',
   tech: 'Ars Technica',
-  sports: 'ESPN',
-  entertainment: 'Variety',
+  sports: 'Fox Sports',
+  entertainment: 'Engadget',
   lifestyle: 'Lifehacker',
   business: 'Entrepreneur',
 };
@@ -72,6 +71,11 @@ const getDefaultImage = (category: string) => {
   return defaultImages[category as keyof typeof defaultImages] || defaultImages.tech;
 };
 
+const extractImageFromContent = (content: string): string | null => {
+  const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+  return imgMatch ? imgMatch[1] : null;
+};
+
 export const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] => {
   const parser = new XMLParser({
     ignoreAttributes: false,
@@ -87,52 +91,50 @@ export const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] =>
   const items = feed.rss.channel.item;
 
   return items.slice(0, 20).map((item: any) => {
+    let fullContent = item['content:encoded'] || 
+                     item.content || 
+                     item.description || 
+                     '';
+
+    if (typeof fullContent === 'object') {
+      fullContent = fullContent['#text'] || fullContent.toString() || '';
+    }
+
+    if (category === 'sports' && item.description) {
+      fullContent = item.description;
+    }
+
     let image = item['media:content']?.["@_url"] || 
                 item['media:thumbnail']?.["@_url"] ||
-                item.enclosure?.["@_url"];
-    
+                item.enclosure?.["@_url"] ||
+                extractImageFromContent(fullContent) ||
+                extractImageFromContent(item.description || '');
+
+    if (category === 'sports' && !image) {
+      const mediaGroup = item['media:group'];
+      if (mediaGroup && mediaGroup['media:content']) {
+        const mediaContent = Array.isArray(mediaGroup['media:content']) 
+          ? mediaGroup['media:content'][0] 
+          : mediaGroup['media:content'];
+        image = mediaContent?.["@_url"] || null;
+      }
+    }
+
     if (!image) {
-      const imgMatch = item.description?.match(/<img[^>]+src="([^">]+)"/);
-      image = imgMatch ? imgMatch[1] : getDefaultImage(category);
+      image = getDefaultImage(category);
     }
-    
+
     const decodedTitle = decodeHTMLEntities(item.title);
-    
-    const slug = decodedTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-
-    let fullContent = '';
-    if (item['content:encoded']) {
-      fullContent = typeof item['content:encoded'] === 'object' ? 
-        item['content:encoded']['#text'] || item['content:encoded'] : 
-        item['content:encoded'];
-    } else {
-      fullContent = item.description || '';
-    }
-
-    // Get the original article URL
     const originalUrl = item.link || item.guid || '';
-
-    // Add a note about the truncated content with a link to the full article
-    const contentNote = `
-      <div class="my-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <p class="text-gray-700">This article has been truncated. 
-          <a href="${originalUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800">
-            Read the full article on ${RSS_SOURCES[category as keyof typeof RSS_SOURCES]}
-          </a>
-        </p>
-      </div>
-    `;
-
+    
     fullContent = decodeHTMLEntities(fullContent);
-    fullContent = fullContent + contentNote;
     
     const cleanContent = fullContent
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
       .replace(/<img[^>]+height="1"[^>]*>/gi, '')
       .replace(/<img[^>]+width="1"[^>]*>/gi, '')
+      .replace(/<img[^>]+style="[^"]*display:\s*none[^"]*"[^>]*>/gi, '')
       .replace(/<p>\s*<a[^>]*>Read full article<\/a>\s*<\/p>/gi, '')
       .replace(/<p>\s*<a[^>]*>Comments<\/a>\s*<\/p>/gi, '')
       .replace(/\r?\n|\r/g, '')
@@ -149,7 +151,7 @@ export const parseRSSFeed = (xmlData: string, category: string): RSSArticle[] =>
       source,
       date: new Date(item.pubDate).toISOString(),
       author: item.author || source,
-      url: originalUrl, // Add the original article URL
+      url: originalUrl,
     };
   });
 };
@@ -181,7 +183,7 @@ export const fetchRSSFeed = async (url: string, categorySlug: string): Promise<R
             source: article.source,
             author: article.author,
             published_at: article.date,
-            url: article.url  // Store the original article URL
+            url: article.url
           }, {
             onConflict: 'slug'
           });
