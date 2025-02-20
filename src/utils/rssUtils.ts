@@ -1,3 +1,4 @@
+
 import { XMLParser } from 'fast-xml-parser';
 import { supabase } from "@/integrations/supabase/client";
 import { getCategoryId } from './dbUtils';
@@ -59,7 +60,6 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
     trimValues: false,
     parseTagValue: false,
     processEntities: false,
-    cdataTagName: "__cdata",
     tagValueProcessor: (tagName: string, value: string) => value,
   });
 
@@ -81,11 +81,13 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
+    // Get the full content from content:encoded field
     let fullContent = '';
-    if (item['content:encoded'] && item['content:encoded'].__cdata) {
-      fullContent = item['content:encoded'].__cdata;
-    } else if (item['content:encoded']) {
-      fullContent = item['content:encoded'];
+    if (item['content:encoded']) {
+      // Handle both plain text and CDATA content
+      fullContent = typeof item['content:encoded'] === 'object' ? 
+        item['content:encoded']['#text'] || item['content:encoded'] : 
+        item['content:encoded'];
     } else {
       fullContent = item.description || '';
     }
