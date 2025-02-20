@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 const categories = [
   { name: "Home", path: "/" },
   { name: "Latest News", path: "/latest" },
+  { name: "Politics", path: "/politics" },
   { name: "Tech", path: "/tech" },
   { name: "Sports", path: "/sports" },
   { name: "Entertainment", path: "/entertainment" },

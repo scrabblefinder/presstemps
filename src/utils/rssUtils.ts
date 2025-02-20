@@ -16,6 +16,7 @@ export interface RSSArticle {
 }
 
 const RSS_SOURCES = {
+  politics: 'Politico',
   tech: 'Ars Technica',
   sports: 'ESPN',
   entertainment: 'Variety',

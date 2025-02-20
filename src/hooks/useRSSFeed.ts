@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
 const RSS_FEEDS = {
+  politics: 'https://rss.politico.com/politics-news.xml',
   tech: 'https://feeds.arstechnica.com/arstechnica/index?format=xml',
   sports: 'https://www.espn.com/espn/rss/news',
   entertainment: 'https://variety.com/feed/',
