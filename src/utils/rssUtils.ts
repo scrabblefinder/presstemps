@@ -23,9 +23,14 @@ export const parseRSSFeed = (xmlData: string): RSSArticle[] => {
   const items = feed.rss.channel.item;
 
   return items.map((item: any) => {
-    // Extract the first image from the content if available
-    const imgMatch = item['content:encoded']?.match(/<img[^>]+src="([^">]+)"/);
-    const image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
+    // Extract the featured image from media:content
+    let image = item['media:content']?.["@_url"] || '';
+    
+    // If no media:content image, try to extract from content
+    if (!image) {
+      const imgMatch = item['content:encoded']?.match(/<img[^>]+src="([^">]+)"/);
+      image = imgMatch ? imgMatch[1] : 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800';
+    }
     
     // Create URL-friendly slug from title
     const slug = item.title
