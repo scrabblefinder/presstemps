@@ -52,7 +52,13 @@ export const AdminDashboard = () => {
       if (articlesResponse.error) throw articlesResponse.error;
       if (categoriesResponse.error) throw categoriesResponse.error;
 
-      setArticles(articlesResponse.data);
+      // Map the response to include the url field required by Article type
+      const mappedArticles = articlesResponse.data.map(article => ({
+        ...article,
+        url: null // Add the required url field
+      }));
+
+      setArticles(mappedArticles);
       setCategories(categoriesResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);

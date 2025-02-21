@@ -1,7 +1,8 @@
+
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
-export default function ArticlePage() {
+export function ArticlePage() {
   // Placeholder for article page - using 'all' as default category
   const handleCategoryChange = (category: string) => {
     // We'll implement this later if needed for article page
