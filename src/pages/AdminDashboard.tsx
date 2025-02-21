@@ -41,9 +41,24 @@ export const AdminDashboard = () => {
       if (categoriesResponse.error) throw categoriesResponse.error;
 
       console.log('Fetched articles:', articlesResponse.data.length);
-      const mappedArticles = articlesResponse.data.map(article => ({
-        ...article,
-        url: article.url ?? null // Use nullish coalescing to ensure null if url doesn't exist
+      
+      // Properly type the response data and ensure all required fields are present
+      const mappedArticles: Article[] = articlesResponse.data.map(article => ({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        content: article.content,
+        excerpt: article.excerpt,
+        image_url: article.image_url,
+        original_image_url: article.original_image_url,
+        category_id: article.category_id,
+        source: article.source,
+        author: article.author,
+        published_at: article.published_at,
+        created_at: article.created_at,
+        updated_at: article.updated_at,
+        url: article.url || null,
+        categories: article.categories
       }));
 
       setArticles(mappedArticles);
