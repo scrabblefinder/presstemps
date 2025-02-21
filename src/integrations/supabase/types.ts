@@ -24,6 +24,7 @@ export type Database = {
           source: string | null
           title: string
           updated_at: string | null
+          url: string | null
         }
         Insert: {
           author?: string | null
@@ -39,6 +40,7 @@ export type Database = {
           source?: string | null
           title: string
           updated_at?: string | null
+          url?: string | null
         }
         Update: {
           author?: string | null
@@ -54,6 +56,7 @@ export type Database = {
           source?: string | null
           title?: string
           updated_at?: string | null
+          url?: string | null
         }
         Relationships: [
           {
