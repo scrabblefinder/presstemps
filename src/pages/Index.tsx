@@ -130,10 +130,10 @@ const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RS
 };
 
 interface IndexProps {
-  selectedCategory: string;
+  selectedCategory?: string;
 }
 
-const Index = ({ selectedCategory }: IndexProps) => {
+const Index = ({ selectedCategory = 'all' }: IndexProps) => {
   const { data: articles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
