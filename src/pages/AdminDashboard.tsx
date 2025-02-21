@@ -72,6 +72,7 @@ export const AdminDashboard = () => {
         published_at: article.published_at,
         created_at: article.created_at,
         updated_at: article.updated_at,
+        url: article.url || null,
         categories: article.categories
       }));
 
