@@ -22,21 +22,22 @@ interface IndexProps {
 }
 
 const Index = ({ selectedCategory = 'all' }: IndexProps) => {
-  const { data: articles, isLoading, error } = useRSSFeed(selectedCategory !== 'all' ? selectedCategory : undefined);
+  const { data: allArticles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
-  console.log('Selected category:', selectedCategory);
-  console.log('Articles from useRSSFeed:', articles);
+  // Filter articles based on category and search query
+  const filteredArticles = (allArticles || []).filter(article => {
+    const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
+    if (!matchesCategory) return false;
 
-  const searchFilteredArticles = (articles || []).filter(article => {
     if (!searchQuery) return true;
     const searchContent = `${article.title} ${article.excerpt}`.toLowerCase();
     return searchContent.includes(searchQuery.toLowerCase());
   });
 
   // Sort articles by date
-  const sortedArticles = searchFilteredArticles.sort((a, b) => 
+  const sortedArticles = filteredArticles.sort((a, b) => 
     new Date(b.date || '').getTime() - new Date(a.date || '').getTime()
   );
 
@@ -50,8 +51,6 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory]);
-
-  console.log('Final paginated articles:', paginatedArticles);
 
   return (
     <main className="container mx-auto px-4 py-8 flex-1">
