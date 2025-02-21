@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -24,21 +25,14 @@ export const AdminDashboard = () => {
   const [refreshingSource, setRefreshingSource] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAccess = async () => {
-      if (!isCheckingAdmin && !isAdmin) {
-        console.log('Not admin, redirecting to home');
+    if (!isCheckingAdmin) {
+      if (!isAdmin) {
         navigate('/');
-        return;
+      } else {
+        fetchData();
       }
-
-      if (!isCheckingAdmin && isAdmin) {
-        console.log('User is admin, fetching data');
-        await fetchData();
-      }
-    };
-
-    checkAccess();
-  }, [isAdmin, isCheckingAdmin, navigate]);
+    }
+  }, [isAdmin, isCheckingAdmin]);
 
   const fetchData = async () => {
     try {
@@ -55,8 +49,6 @@ export const AdminDashboard = () => {
 
       if (articlesResponse.error) throw articlesResponse.error;
       if (categoriesResponse.error) throw categoriesResponse.error;
-
-      console.log('Fetched data:', { articles: articlesResponse.data, categories: categoriesResponse.data });
 
       const mappedArticles = articlesResponse.data.map(article => ({
         ...article,
@@ -139,12 +131,11 @@ export const AdminDashboard = () => {
     }
   };
 
-  if (isCheckingAdmin || (isAdmin && isLoading)) {
+  if (isCheckingAdmin) {
     return (
       <div className="container mx-auto p-8">
         <div className="space-y-4">
           <Skeleton className="h-8 w-1/4" />
-          <Skeleton className="h-[200px] w-full" />
           <Skeleton className="h-[200px] w-full" />
         </div>
       </div>

@@ -11,31 +11,25 @@ export const useAdmin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        console.log('Checking admin status...');
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user } } = await supabase.auth.getUser();
         
-        if (!session) {
-          console.log('No session found');
+        if (!user) {
           setIsAdmin(false);
           setIsLoading(false);
           return;
         }
 
-        console.log('Session found, checking admin role for user:', session.user.id);
-        
         const { data, error } = await supabase
           .from('user_roles')
-          .select('*')
-          .eq('user_id', session.user.id)
+          .select()
+          .eq('user_id', user.id)
           .eq('role', 'admin')
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Error checking admin role:', error);
           throw error;
         }
 
-        console.log('Admin check result:', data);
         setIsAdmin(!!data);
       } catch (error) {
         console.error('Error checking admin status:', error);
@@ -44,12 +38,23 @@ export const useAdmin = () => {
           description: "Please try again later",
           variant: "destructive"
         });
+        setIsAdmin(false);
       } finally {
         setIsLoading(false);
       }
     };
 
+    // Initial check
     checkAdminStatus();
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAdminStatus();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return { isAdmin, isLoading };
