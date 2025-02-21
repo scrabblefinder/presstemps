@@ -69,13 +69,25 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
   let query = supabase
     .from('articles')
     .select(`
-      distinct on (slug) *,
+      id,
+      title,
+      slug,
+      content,
+      excerpt,
+      image_url,
+      original_image_url,
+      category_id,
+      source,
+      author,
+      published_at,
+      created_at,
+      updated_at,
+      url,
       categories:category_id (
         name,
         slug
       )
     `)
-    .order('slug')
     .order('published_at', { ascending: false });
 
   if (category && category !== 'all') {
@@ -97,8 +109,13 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
     throw error;
   }
   
-  console.log('Articles from database:', data);
-  const mappedArticles = (data as Article[]).map(mapArticleToRSSArticle);
+  // Remove duplicates based on slug
+  const uniqueArticles = Array.from(
+    new Map(data?.map(article => [article.slug, article])).values()
+  );
+  
+  console.log('Articles from database:', uniqueArticles);
+  const mappedArticles = (uniqueArticles as Article[]).map(mapArticleToRSSArticle);
   console.log('Mapped articles:', mappedArticles);
   
   return mappedArticles;
