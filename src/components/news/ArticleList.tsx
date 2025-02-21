@@ -34,7 +34,9 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
       8: 'Sports',
       9: 'World News',  // Added to handle both 5 and 9 as World News
       10: 'Lifestyle',
-      'world': 'World News'  // Added to handle string category IDs
+      'world': 'World News',  // Handle string "world" category
+      'World News': 'World News',  // Handle exact "World News" string
+      'World': 'World News'  // Handle "World" string
     };
 
     const displayName = categoryMap[id] || categoryMap[categoryId] || 'Uncategorized';
