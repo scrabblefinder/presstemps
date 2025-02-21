@@ -30,6 +30,7 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
       4: 'Entertainment',
       5: 'World News',
       6: 'Politics',
+      7: 'US',
       8: 'Sports',
       10: 'Lifestyle'
     };
