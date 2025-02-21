@@ -26,23 +26,20 @@ export const useAdmin = () => {
 
         console.log('Checking admin status for user:', user.id);
 
-        // Check admin role
+        // Check admin role - explicitly check for 'admin' role
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
-          .select('role')
+          .select('*')
           .eq('user_id', user.id)
+          .eq('role', 'admin')
           .single();
 
-        if (roleError) {
+        if (roleError && roleError.code !== 'PGRST116') { // Ignore "no rows returned" error
           throw roleError;
         }
 
         console.log('Role data:', roleData);
-        
-        // Set admin status if role is found
-        const hasAdminRole = roleData?.role === 'admin';
-        console.log('Is admin:', hasAdminRole);
-        setIsAdmin(hasAdminRole);
+        setIsAdmin(!!roleData); // Will be true only if an admin role was found
 
       } catch (error) {
         console.error('Error checking admin status:', error);
@@ -62,7 +59,7 @@ export const useAdmin = () => {
 
     // Also check when auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+      console.log('Auth state changed:', event, 'User:', session?.user?.id);
       checkAdminStatus();
     });
 

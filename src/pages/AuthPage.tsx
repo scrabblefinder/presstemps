@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,19 +37,20 @@ export function AuthPage() {
         console.log('Logged in user:', user?.id);
         
         // Check if user has admin role
-        const { data: roleData } = await supabase
+        const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
-          .select('role')
+          .select('*')
           .eq('user_id', user?.id)
+          .eq('role', 'admin')
           .single();
 
         console.log('User role data:', roleData);
 
-        if (roleData?.role === 'admin') {
-          console.log('Redirecting to admin dashboard');
+        if (!roleError && roleData) {
+          console.log('User is admin, redirecting to admin dashboard');
           navigate('/admin');
         } else {
-          console.log('Redirecting to home');
+          console.log('User is not admin, redirecting to home');
           navigate('/');
         }
 
