@@ -20,22 +20,24 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
     }
 
     // Convert string to number if it's a numeric string
-    const id = typeof categoryId === 'string' ? parseInt(categoryId) : categoryId;
+    const id = typeof categoryId === 'string' ? parseInt(categoryId, 10) : categoryId;
     console.log('Parsed category ID:', id);
     
-    const categoryMap: Record<number, string> = {
+    const categoryMap: Record<number | string, string> = {
       1: 'Technology',
       2: 'Science',
       3: 'Business',
       4: 'Entertainment',
-      5: 'World News',  // Updated from 'World' to 'World News'
+      5: 'World News',
       6: 'Politics',
       7: 'US',
       8: 'Sports',
-      10: 'Lifestyle'
+      9: 'World News',  // Added to handle both 5 and 9 as World News
+      10: 'Lifestyle',
+      'world': 'World News'  // Added to handle string category IDs
     };
 
-    const displayName = categoryMap[id] || 'Uncategorized';
+    const displayName = categoryMap[id] || categoryMap[categoryId] || 'Uncategorized';
     console.log('Display name chosen:', displayName);
     return displayName;
   };
