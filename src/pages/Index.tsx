@@ -17,18 +17,18 @@ const calculateReadingTime = (date: string): number => {
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
 };
 
-const getCategorySlug = (categoryId: number): string => {
-  const categoryMap: Record<number, string> = {
-    1: 'technology',
-    2: 'science',
-    3: 'business',
-    4: 'entertainment',
-    5: 'world', // Latest News
-    6: 'us', // Politics
-    8: 'sports',
-    10: 'lifestyle'
+const getCategoryId = (slug: string): number => {
+  const categoryMap: Record<string, number> = {
+    'technology': 1,
+    'science': 2,
+    'business': 3,
+    'entertainment': 4,
+    'world': 5,
+    'us': 6,
+    'sports': 8,
+    'lifestyle': 10
   };
-  return categoryMap[categoryId] || 'world';
+  return categoryMap[slug] || 5; // Default to world news if slug not found
 };
 
 const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
@@ -39,10 +39,9 @@ const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RS
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
     : articles.filter(article => {
-        console.log('Article category before filtering:', article.category);
-        const categorySlug = getCategorySlug(parseInt(article.category));
-        console.log('Category slug:', categorySlug);
-        return categorySlug === selectedCategory;
+        const categoryId = getCategoryId(selectedCategory);
+        console.log('Filtering article:', article.title, 'Article category:', article.category, 'Selected category ID:', categoryId);
+        return article.category === categoryId.toString();
       });
 
   console.log('Filtered articles:', filteredArticles);
