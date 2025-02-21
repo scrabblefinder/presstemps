@@ -7,6 +7,7 @@ import { RSSArticle } from "@/utils/rssUtils";
 import { LoadingSkeleton } from "@/components/news/LoadingSkeleton";
 import { ArticleList } from "@/components/news/ArticleList";
 import { Pagination } from "@/components/news/Pagination";
+import { SearchSidebar } from "@/components/news/SearchSidebar";
 
 const ARTICLES_PER_PAGE = 10;
 
@@ -138,7 +139,11 @@ const Index = () => {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setCurrentPage(1); // Reset to first page when changing categories
+    setCurrentPage(1);
+  };
+
+  const handleArticleClick = (article: RSSArticle) => {
+    window.open(article.url, '_blank', 'noopener,noreferrer');
   };
 
   // First diversify and filter articles
@@ -181,8 +186,10 @@ const Index = () => {
 
             <aside className="lg:col-span-1">
               <div className="sticky top-4 bg-white rounded-lg p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-4 text-ink-dark">Sidebar</h2>
-                <p className="text-ink-light">Content coming soon...</p>
+                <SearchSidebar 
+                  articles={articles || []}
+                  onArticleClick={handleArticleClick}
+                />
               </div>
             </aside>
           </div>
