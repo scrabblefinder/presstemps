@@ -7,6 +7,7 @@ import Index from "@/pages/Index";
 import CategoryPage from "@/pages/CategoryPage";
 import { ArticlePage } from "@/pages/ArticlePage";
 import NotFound from "@/pages/NotFound";
+import { AuthPage } from "@/pages/AuthPage";
 
 function App() {
   const handleCategoryChange = (category: string) => {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/article/:slug" element={<ArticlePage />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
