@@ -11,28 +11,16 @@ export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps
   // Helper function to get category display name
   const getCategoryDisplayName = (category: string): string => {
     const categoryMap: Record<string, string> = {
-      theverge: 'Technology',
-      techcrunch: 'Technology',
-      wired: 'Technology',
-      reuters: 'World',
-      ap: 'World',
-      bbc: 'World',
-      guardian: 'World',
-      nytimes: 'World',
-      wsj: 'World',
-      bloomberg: 'Business',
-      forbes: 'Business',
-      economist: 'Business',
-      nature: 'Science',
-      newscientist: 'Science',
-      scientific: 'Science',
-      variety: 'Entertainment',
-      hollywood: 'Entertainment',
-      rollingstone: 'Entertainment',
-      espn: 'Sports',
-      sports_illustrated: 'Sports'
+      'technology': 'Technology',
+      'science': 'Science',
+      'business': 'Business',
+      'entertainment': 'Entertainment',
+      'world': 'World News',
+      'us': 'Politics',
+      'sports': 'Sports',
+      'lifestyle': 'Lifestyle'
     };
-    return categoryMap[category] || 'US';
+    return categoryMap[category] || category;
   };
 
   return (
@@ -78,4 +66,3 @@ export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps
     </div>
   );
 };
-
