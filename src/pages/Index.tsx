@@ -19,13 +19,46 @@ const calculateReadingTime = (date: string): number => {
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
 };
 
+const shuffleArray = (array: any[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const diversifyArticles = (articles: RSSArticle[]): RSSArticle[] => {
+  // Group articles by category
+  const articlesByCategory = articles.reduce((acc, article) => {
+    if (!acc[article.category]) {
+      acc[article.category] = [];
+    }
+    acc[article.category].push(article);
+    return acc;
+  }, {} as Record<string, RSSArticle[]>);
+
+  // Take up to 3 most recent articles from each category
+  const diversifiedArticles: RSSArticle[] = [];
+  Object.values(articlesByCategory).forEach(categoryArticles => {
+    // Sort by date and take up to 3
+    const recentCategoryArticles = categoryArticles
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 3);
+    diversifiedArticles.push(...recentCategoryArticles);
+  });
+
+  // Shuffle the articles to mix categories
+  return shuffleArray(diversifiedArticles);
+};
+
 const Index = () => {
   const { data: articles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const allArticles = articles || [];
-  const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
-  const paginatedArticles = allArticles.slice(
+  // Diversify articles before pagination
+  const diversifiedArticles = diversifyArticles(articles || []);
+  const totalPages = Math.ceil(diversifiedArticles.length / ARTICLES_PER_PAGE);
+  const paginatedArticles = diversifiedArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
     currentPage * ARTICLES_PER_PAGE
   );
