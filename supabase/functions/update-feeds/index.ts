@@ -85,6 +85,7 @@ async function updateFeed(categorySlug: string) {
           );
 
           const url = item.link || item.guid || '';
+          const published = new Date(item.pubDate || item.published || item['dc:date'] || '');
           
           if (!url || !title) {
             console.log(`Skipping article "${title}" due to missing URL or title`);
@@ -98,27 +99,31 @@ async function updateFeed(categorySlug: string) {
             slug,
             title,
             content: description,
-            excerpt: cleanDescription(description),
+            excerpt: cleanDescription(description).substring(0, 300) + '...',
             image_url: image,
             original_image_url: image,
             category_id: categoryData.id,
             source: feed.name,
             author: item.author || item.creator || feed.name,
-            published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
+            published_at: published.toISOString(),
             url
           };
+
+          console.log('Attempting to save article:', { title, slug, category: categorySlug });
 
           // Upsert article
           const { error: upsertError } = await supabase
             .from('articles')
             .upsert(article, {
-              onConflict: 'slug'
+              onConflict: 'slug',
+              ignoreDuplicates: false
             });
 
           if (upsertError) {
             console.error(`Error upserting article: ${upsertError.message}`);
           } else {
             processedCount++;
+            console.log(`Successfully saved article: ${title}`);
           }
         }
       } catch (error) {
