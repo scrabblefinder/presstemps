@@ -21,14 +21,14 @@ const calculateReadingTime = (date: string): number => {
 };
 
 const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
+  // Using a single select with count aggregation
   const { data: clickData, error } = await supabase
     .from('article_clicks')
     .select(`
       article_id,
-      count: count(*)
-    `)
-    .group('article_id')
-    .order('count', { ascending: false })
+      clicks:count(*)
+    `, { count: 'exact' })
+    .order('clicks', { ascending: false })
     .limit(10);
 
   if (error) throw error;
