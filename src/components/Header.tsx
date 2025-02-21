@@ -1,4 +1,6 @@
 
+import { Link } from "react-router-dom";
+
 const categories = [
   { name: "All", slug: "all" },
   { name: "US", slug: "us" },
