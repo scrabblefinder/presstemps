@@ -10,8 +10,9 @@ export const useRSSFeed = (category?: string) => {
     queryKey: ['articles', category],
     queryFn: async () => {
       try {
-        console.log('Fetching articles from database...');
+        console.log('Fetching articles from database with category:', category);
         const articles = await fetchArticles(category);
+        console.log('Articles fetched:', articles);
         return articles;
       } catch (error) {
         console.error('Database fetch error:', error);

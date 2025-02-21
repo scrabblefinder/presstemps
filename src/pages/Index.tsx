@@ -17,50 +17,16 @@ const calculateReadingTime = (date: string): number => {
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
 };
 
-const getCategoryId = (slug: string): number => {
-  const categoryMap: Record<string, number> = {
-    'technology': 1,
-    'science': 2,
-    'business': 3,
-    'entertainment': 4,
-    'world': 5,
-    'us': 6,
-    'sports': 8,
-    'lifestyle': 10
-  };
-  return categoryMap[slug] || 5; // Default to world news if slug not found
-};
-
-const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
-  console.log('Diversifying articles with category:', selectedCategory);
-  console.log('Articles before filtering:', articles);
-  
-  // First filter articles by selected category
-  const filteredArticles = selectedCategory === 'all' 
-    ? articles 
-    : articles.filter(article => {
-        const categoryId = getCategoryId(selectedCategory);
-        console.log('Filtering article:', article.title, 'Article category:', article.category, 'Selected category ID:', categoryId);
-        return article.category === categoryId.toString();
-      });
-
-  console.log('Filtered articles:', filteredArticles);
-
-  // Sort all articles by date
-  return filteredArticles.sort((a, b) => 
-    new Date(b.date || '').getTime() - new Date(a.date || '').getTime()
-  );
-};
-
 interface IndexProps {
   selectedCategory?: string;
 }
 
 const Index = ({ selectedCategory = 'all' }: IndexProps) => {
-  const { data: articles, isLoading, error } = useRSSFeed();
+  const { data: articles, isLoading, error } = useRSSFeed(selectedCategory !== 'all' ? selectedCategory : undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
+  console.log('Selected category:', selectedCategory);
   console.log('Articles from useRSSFeed:', articles);
 
   const searchFilteredArticles = (articles || []).filter(article => {
@@ -69,12 +35,21 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
     return searchContent.includes(searchQuery.toLowerCase());
   });
 
-  const diversifiedArticles = diversifyArticles(searchFilteredArticles, selectedCategory);
-  const totalPages = Math.ceil(diversifiedArticles.length / ARTICLES_PER_PAGE);
-  const paginatedArticles = diversifiedArticles.slice(
+  // Sort articles by date
+  const sortedArticles = searchFilteredArticles.sort((a, b) => 
+    new Date(b.date || '').getTime() - new Date(a.date || '').getTime()
+  );
+
+  const totalPages = Math.ceil(sortedArticles.length / ARTICLES_PER_PAGE);
+  const paginatedArticles = sortedArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
     currentPage * ARTICLES_PER_PAGE
   );
+
+  // Reset to first page when category changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
 
   console.log('Final paginated articles:', paginatedArticles);
 
