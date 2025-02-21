@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Article } from '@/utils/dbUtils';
-import { Button } from '@/components/ui/button';
-import { Trash2, RefreshCw } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { CategoriesSection } from '@/components/admin/CategoriesSection';
+import { ArticlesSection } from '@/components/admin/ArticlesSection';
 
 interface Category {
   id: number;
@@ -133,57 +133,15 @@ export const AdminDashboard = () => {
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
       <div className="space-y-8">
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">Categories and Sources</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categories.map((category) => (
-              <div key={category.id} className="p-4 border rounded-lg bg-white">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">{category.name}</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => refreshSource(category.slug)}
-                    disabled={refreshingSource === category.slug}
-                  >
-                    <RefreshCw className={`mr-2 h-4 w-4 ${refreshingSource === category.slug ? "animate-spin" : ""}`} />
-                    Refresh Now
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">Articles</h2>
-          <div className="space-y-4">
-            {articles.map((article) => (
-              <div key={article.id} className="p-4 border rounded-lg bg-white flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm text-blue-600 font-medium">
-                      {article.categories?.name}
-                    </span>
-                    <span className="text-sm text-gray-500">•</span>
-                    <span className="text-sm text-gray-500">
-                      {new Date(article.published_at || article.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">{article.title}</h3>
-                  <p className="text-gray-600 text-sm line-clamp-2">{article.excerpt}</p>
-                </div>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => deleteArticle(article.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </section>
+        <CategoriesSection
+          categories={categories}
+          onRefreshSource={refreshSource}
+          refreshingSource={refreshingSource}
+        />
+        <ArticlesSection
+          articles={articles}
+          onDeleteArticle={deleteArticle}
+        />
       </div>
     </div>
   );
