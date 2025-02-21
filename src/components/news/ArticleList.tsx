@@ -8,6 +8,33 @@ interface ArticleListProps {
 }
 
 export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps) => {
+  // Helper function to get category display name
+  const getCategoryDisplayName = (category: string): string => {
+    const categoryMap: Record<string, string> = {
+      theverge: 'Tech',
+      techcrunch: 'Tech',
+      wired: 'Tech',
+      reuters: 'World',
+      ap: 'World',
+      bbc: 'World',
+      guardian: 'World',
+      nytimes: 'World',
+      wsj: 'World',
+      bloomberg: 'Business',
+      forbes: 'Business',
+      economist: 'Business',
+      nature: 'Science',
+      newscientist: 'Science',
+      scientific: 'Science',
+      variety: 'Entertainment',
+      hollywood: 'Entertainment',
+      rollingstone: 'Entertainment',
+      espn: 'Sports',
+      sports_illustrated: 'Sports'
+    };
+    return categoryMap[category] || 'General';
+  };
+
   return (
     <div className="space-y-8">
       {articles.map((article) => (
@@ -29,7 +56,7 @@ export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps
             <div className="flex-1">
               <div className="flex items-center gap-3 text-sm mb-2">
                 <span className="text-blue-600 font-medium">
-                  {article.category.toUpperCase()}
+                  {getCategoryDisplayName(article.category)}
                 </span>
                 <span className="text-ink-light">•</span>
                 <span className="text-ink-light">{article.source}</span>
