@@ -58,23 +58,30 @@ export const AdminDashboard = () => {
       console.log('Fetched articles:', articlesResponse.data.length);
       
       // Properly type the response data and ensure all required fields are present
-      const mappedArticles: Article[] = articlesResponse.data.map(article => ({
-        id: article.id,
-        title: article.title,
-        slug: article.slug,
-        content: article.content,
-        excerpt: article.excerpt,
-        image_url: article.image_url,
-        original_image_url: article.original_image_url,
-        category_id: article.category_id,
-        source: article.source,
-        author: article.author,
-        published_at: article.published_at,
-        created_at: article.created_at,
-        updated_at: article.updated_at,
-        url: article.url || null,
-        categories: article.categories
-      }));
+      const mappedArticles: Article[] = articlesResponse.data.map(article => {
+        // Create a fallback URL using the source and slug
+        const fallbackUrl = article.source && article.slug 
+          ? `https://${article.source}.com/article/${article.slug}`
+          : null;
+
+        return {
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          content: article.content,
+          excerpt: article.excerpt,
+          image_url: article.image_url,
+          original_image_url: article.original_image_url,
+          category_id: article.category_id,
+          source: article.source,
+          author: article.author,
+          published_at: article.published_at,
+          created_at: article.created_at,
+          updated_at: article.updated_at,
+          url: fallbackUrl,
+          categories: article.categories
+        };
+      });
 
       if (categorySlug) {
         // Update only the articles for the specific category
