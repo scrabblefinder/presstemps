@@ -63,13 +63,13 @@ async function updateFeeds() {
           typeof item.description === 'string' ? item.description : item.description?.['#text'] || ''
         );
 
-        const url = item.link || item.guid || '';
-        if (!url || !title) continue;
+        const originalUrl = item.link || item.guid || '';
+        if (!originalUrl || !title) continue;
 
         // Create URL-friendly slug
         const slug = `${categorySlug}-${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`;
 
-        // Upsert article
+        // Upsert article with original URL
         const { error } = await supabase
           .from('articles')
           .upsert({
@@ -83,6 +83,7 @@ async function updateFeeds() {
             source: categorySlug,
             author: item.author || item.creator || categorySlug,
             published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
+            url: originalUrl // Store the original URL
           }, {
             onConflict: 'slug'
           });

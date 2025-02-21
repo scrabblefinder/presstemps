@@ -16,7 +16,7 @@ export interface Article {
   published_at: string | null;
   created_at: string;
   updated_at: string;
-  url?: string | null;
+  url: string | null;
   categories?: {
     name: string;
     slug: string;
@@ -32,7 +32,7 @@ const mapArticleToRSSArticle = (article: Article): RSSArticle => {
     source: article.source || 'unknown',
     date: article.published_at || article.created_at,
     author: article.author || 'unknown',
-    url: article.url || `/${article.categories?.slug || 'general'}/${article.slug}`,
+    url: article.url || '', // Use the original URL stored in the database
   };
 };
 

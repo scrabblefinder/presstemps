@@ -1,5 +1,5 @@
 
-import { RSSArticle } from "@/utils/rssUtils";
+import { RSSArticle } from "@/utils/types/rssTypes";
 import { Clock3 } from "lucide-react";
 
 interface ArticleListProps {
