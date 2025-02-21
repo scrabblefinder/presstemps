@@ -1,10 +1,13 @@
 
 export const decodeHTMLEntities = (text: string): string => {
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = text;
-  return textarea.value;
+  if (!text) return '';
+  
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  return doc.documentElement.textContent || '';
 };
 
 export const cleanDescription = (description: string): string => {
-  return description.replace(/<[^>]+>/g, '').slice(0, 150) + '...';
+  if (!description) return '';
+  const decodedText = decodeHTMLEntities(description);
+  return decodedText.replace(/<[^>]+>/g, '').slice(0, 150) + '...';
 };

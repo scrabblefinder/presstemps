@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { RSSArticle } from "./types/rssTypes";
+import { decodeHTMLEntities } from "./helpers/textUtils";
 
 export interface Article {
   id: number;
@@ -33,18 +34,18 @@ const mapArticleToRSSArticle = (article: Article): RSSArticle => {
     title: article.title,
     originalUrl: article.url,
     fallbackUrl: fallbackUrl,
-    categoryId: article.category_id // Log the category_id
+    categoryId: article.category_id
   });
 
   return {
-    title: article.title,
-    excerpt: article.excerpt || '',
+    title: decodeHTMLEntities(article.title),
+    excerpt: decodeHTMLEntities(article.excerpt || ''),
     image: article.image_url,
-    category: article.category_id.toString(), // Convert category_id to string
+    category: article.category_id.toString(),
     source: article.source || 'unknown',
     date: article.published_at || article.created_at,
     author: article.author || 'unknown',
-    url: article.url || fallbackUrl, // Use fallback URL if no original URL exists
+    url: article.url || fallbackUrl,
   };
 };
 
