@@ -21,28 +21,49 @@ const calculateReadingTime = (date: string): number => {
 };
 
 const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
-  // Using a single select with count aggregation
-  const { data: clickData, error } = await supabase
+  console.log('Fetching popular articles...');
+  
+  // First, get the most clicked articles
+  const { data: clickCounts, error: clickError } = await supabase
     .from('article_clicks')
-    .select(`
-      article_id,
-      clicks:count(*)
-    `, { count: 'exact' })
-    .order('clicks', { ascending: false })
+    .select('article_id, count(*)', { count: 'exact' })
+    .groupBy('article_id')
+    .order('count', { ascending: false })
     .limit(10);
 
-  if (error) throw error;
+  console.log('Click counts:', clickCounts);
 
-  if (!clickData?.length) return [];
+  if (clickError) {
+    console.error('Error fetching click counts:', clickError);
+    throw clickError;
+  }
 
-  const articleIds = clickData.map(click => click.article_id);
+  if (!clickCounts?.length) {
+    console.log('No click data found');
+    return [];
+  }
+
+  const articleIds = clickCounts.map(click => click.article_id).filter(Boolean);
   
+  if (articleIds.length === 0) {
+    console.log('No valid article IDs found');
+    return [];
+  }
+
+  console.log('Fetching articles with IDs:', articleIds);
+
+  // Then fetch the actual articles
   const { data: articles, error: articlesError } = await supabase
     .from('articles')
     .select('*')
     .in('id', articleIds);
 
-  if (articlesError) throw articlesError;
+  if (articlesError) {
+    console.error('Error fetching articles:', articlesError);
+    throw articlesError;
+  }
+
+  console.log('Found articles:', articles);
 
   return articles.map(article => ({
     title: article.title,
@@ -73,6 +94,8 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
 
   // Track article clicks
   const trackArticleClick = async (articleUrl: string) => {
+    console.log('Tracking click for article:', articleUrl);
+    
     const { data: article } = await supabase
       .from('articles')
       .select('id')
@@ -80,6 +103,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
       .single();
 
     if (article?.id) {
+      console.log('Inserting click for article ID:', article.id);
       await supabase.from('article_clicks').insert({
         article_id: article.id
       });
