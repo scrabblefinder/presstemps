@@ -85,25 +85,18 @@ export const AdminDashboard = () => {
   const refreshSource = async (categorySlug: string) => {
     setRefreshingSource(categorySlug);
     try {
-      const response = await fetch(
-        'https://qykkqekfpogtgsemzset.supabase.co/functions/v1/update-feeds',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ category: categorySlug }),
-        }
-      );
+      const { error } = await supabase.functions.invoke('update-feeds', {
+        body: { category: categorySlug }
+      });
 
-      if (!response.ok) throw new Error('Failed to refresh feeds');
+      if (error) throw error;
 
       toast({
         title: "Refresh initiated",
         description: `Started refreshing feeds for ${categorySlug}`,
       });
 
+      // Wait a bit for the feeds to update before refetching
       setTimeout(() => {
         fetchData();
       }, 5000);
