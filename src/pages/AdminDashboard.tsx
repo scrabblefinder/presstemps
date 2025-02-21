@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -25,20 +24,21 @@ export const AdminDashboard = () => {
   const [refreshingSource, setRefreshingSource] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if admin and redirect if not
-    if (!isCheckingAdmin && !isAdmin) {
-      console.log('Not admin, redirecting to home');
-      navigate('/');
-    }
-  }, [isAdmin, isCheckingAdmin, navigate]);
+    const checkAccess = async () => {
+      if (!isCheckingAdmin && !isAdmin) {
+        console.log('Not admin, redirecting to home');
+        navigate('/');
+        return;
+      }
 
-  useEffect(() => {
-    // Only fetch data if user is admin
-    if (isAdmin) {
-      console.log('User is admin, fetching data');
-      fetchData();
-    }
-  }, [isAdmin]);
+      if (!isCheckingAdmin && isAdmin) {
+        console.log('User is admin, fetching data');
+        await fetchData();
+      }
+    };
+
+    checkAccess();
+  }, [isAdmin, isCheckingAdmin, navigate]);
 
   const fetchData = async () => {
     try {
@@ -56,10 +56,11 @@ export const AdminDashboard = () => {
       if (articlesResponse.error) throw articlesResponse.error;
       if (categoriesResponse.error) throw categoriesResponse.error;
 
-      // Map the response to include the url field required by Article type
+      console.log('Fetched data:', { articles: articlesResponse.data, categories: categoriesResponse.data });
+
       const mappedArticles = articlesResponse.data.map(article => ({
         ...article,
-        url: null // Add the required url field
+        url: null
       }));
 
       setArticles(mappedArticles);
@@ -122,7 +123,6 @@ export const AdminDashboard = () => {
         description: `Started refreshing feeds for ${categorySlug}`,
       });
 
-      // Wait a few seconds then refresh the article list
       setTimeout(() => {
         fetchData();
       }, 5000);
@@ -139,7 +139,7 @@ export const AdminDashboard = () => {
     }
   };
 
-  if (isCheckingAdmin || (!isAdmin && isLoading)) {
+  if (isCheckingAdmin || (isAdmin && isLoading)) {
     return (
       <div className="container mx-auto p-8">
         <div className="space-y-4">
@@ -152,7 +152,7 @@ export const AdminDashboard = () => {
   }
 
   if (!isAdmin) {
-    return null; // Navigate will handle redirect
+    return null;
   }
 
   return (

@@ -11,20 +11,31 @@ export const useAdmin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
+        console.log('Checking admin status...');
         const { data: { session } } = await supabase.auth.getSession();
+        
         if (!session) {
+          console.log('No session found');
           setIsAdmin(false);
+          setIsLoading(false);
           return;
         }
 
+        console.log('Session found, checking admin role for user:', session.user.id);
+        
         const { data, error } = await supabase
           .from('user_roles')
-          .select('role')
+          .select('*')
           .eq('user_id', session.user.id)
           .eq('role', 'admin')
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error checking admin role:', error);
+          throw error;
+        }
+
+        console.log('Admin check result:', data);
         setIsAdmin(!!data);
       } catch (error) {
         console.error('Error checking admin status:', error);
