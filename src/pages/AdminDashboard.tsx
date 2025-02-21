@@ -23,14 +23,29 @@ export const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (categorySlug?: string) => {
     try {
       console.log('Fetching dashboard data...');
+      let articlesQuery = supabase
+        .from('articles')
+        .select('*, categories(name, slug)')
+        .order('published_at', { ascending: false });
+
+      // If a category is specified, filter articles by that category
+      if (categorySlug) {
+        const { data: categoryData } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', categorySlug)
+          .single();
+
+        if (categoryData) {
+          articlesQuery = articlesQuery.eq('category_id', categoryData.id);
+        }
+      }
+
       const [articlesResponse, categoriesResponse] = await Promise.all([
-        supabase
-          .from('articles')
-          .select('*, categories(name, slug)')
-          .order('published_at', { ascending: false }),
+        articlesQuery,
         supabase
           .from('categories')
           .select('*')
@@ -57,12 +72,31 @@ export const AdminDashboard = () => {
         published_at: article.published_at,
         created_at: article.created_at,
         updated_at: article.updated_at,
-        url: article.url || null,
         categories: article.categories
       }));
 
-      setArticles(mappedArticles);
+      if (categorySlug) {
+        // Update only the articles for the specific category
+        setArticles(prevArticles => {
+          const otherArticles = prevArticles.filter(article => 
+            article.categories?.slug !== categorySlug
+          );
+          return [...mappedArticles, ...otherArticles];
+        });
+      } else {
+        setArticles(mappedArticles);
+      }
+      
       setCategories(categoriesResponse.data);
+
+      // Show success message for category refresh
+      if (categorySlug) {
+        const categoryName = categoriesResponse.data.find(cat => cat.slug === categorySlug)?.name;
+        toast({
+          title: "Refresh successful",
+          description: `Successfully fetched ${mappedArticles.length} articles for ${categoryName || categorySlug}`,
+        });
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -114,8 +148,8 @@ export const AdminDashboard = () => {
         description: `Started refreshing feeds for ${categorySlug}`,
       });
 
-      // Immediately fetch new data after the refresh
-      await fetchData();
+      // Fetch new data specifically for this category
+      await fetchData(categorySlug);
 
     } catch (error) {
       console.error('Error refreshing feeds:', error);
