@@ -21,9 +21,11 @@ const calculateReadingTime = (date: string): number => {
 };
 
 const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
+  // Fixed query to use correct syntax for grouping
   const { data: clickData, error } = await supabase
     .from('article_clicks')
-    .select('article_id, count(*)')
+    .select('article_id, count')
+    .select('article_id, count(*)') // Correct syntax for count with group by
     .group('article_id')
     .order('count', { ascending: false })
     .limit(10);
