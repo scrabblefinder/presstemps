@@ -44,7 +44,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-paper-light">
-        <Header onCategoryChange={handleCategoryChange} activeCategory="all" session={session} />
+        <Header onCategoryChange={handleCategoryChange} activeCategory="all" />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" />} />
