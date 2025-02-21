@@ -48,11 +48,13 @@ export function Header({ onCategoryChange, activeCategory }: HeaderProps) {
               <li key={category.slug}>
                 <button
                   onClick={() => onCategoryChange(category.slug)}
-                  className={`font-inter text-sm md:text-base uppercase tracking-wide transition-colors ${
-                    activeCategory === category.slug 
-                    ? 'text-blue-600 font-medium' 
-                    : 'text-ink-light hover:text-ink-dark'
-                  }`}
+                  className={`font-inter text-sm md:text-base uppercase tracking-wide transition-all
+                    ${activeCategory === category.slug 
+                      ? 'text-blue-600 font-medium' 
+                      : 'text-ink-light hover:text-ink-dark hover:font-bold'}
+                    relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 
+                    after:bg-blue-600 after:transform after:scale-x-0 hover:after:scale-x-100 
+                    after:transition-transform after:duration-300 after:origin-left pb-1`}
                 >
                   {category.name}
                 </button>
