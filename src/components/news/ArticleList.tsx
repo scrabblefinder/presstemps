@@ -5,9 +5,10 @@ import { Clock3 } from "lucide-react";
 interface ArticleListProps {
   articles: RSSArticle[];
   calculateReadingTime: (date: string) => number;
+  onArticleClick?: (url: string) => void;
 }
 
-export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps) => {
+export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: ArticleListProps) => {
   // Helper function to get category display name
   const getCategoryDisplayName = (categoryId: string | number): string => {
     console.log('Category ID received:', categoryId, 'Type:', typeof categoryId);
@@ -51,6 +52,7 @@ export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps
             target="_blank"
             rel="noopener noreferrer"
             className="group block"
+            onClick={() => onArticleClick?.(article.url)}
           >
             <article className="flex gap-6 items-start p-4 rounded-lg hover:bg-white transition-colors">
               <div className="flex-shrink-0 w-48 h-32 overflow-hidden rounded-lg">

@@ -6,6 +6,9 @@ import { LoadingSkeleton } from "@/components/news/LoadingSkeleton";
 import { ArticleList } from "@/components/news/ArticleList";
 import { Pagination } from "@/components/news/Pagination";
 import { SearchSidebar } from "@/components/news/SearchSidebar";
+import { PopularNewsSidebar } from "@/components/news/PopularNewsSidebar";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const ARTICLES_PER_PAGE = 10;
 
@@ -17,6 +20,40 @@ const calculateReadingTime = (date: string): number => {
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
 };
 
+const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
+  const { data: clickData, error } = await supabase
+    .from('article_clicks')
+    .select('article_id, count(*)')
+    .group('article_id')
+    .order('count', { ascending: false })
+    .limit(10);
+
+  if (error) throw error;
+
+  if (!clickData.length) return [];
+
+  const articleIds = clickData.map(click => click.article_id);
+  
+  const { data: articles, error: articlesError } = await supabase
+    .from('articles')
+    .select('*')
+    .in('id', articleIds);
+
+  if (articlesError) throw articlesError;
+
+  // Map database articles to RSSArticle format
+  return articles.map(article => ({
+    title: article.title,
+    excerpt: article.excerpt || '',
+    image: article.image_url,
+    category: article.category_id?.toString() || '',
+    source: article.source || '',
+    date: article.published_at || article.created_at,
+    author: article.author || '',
+    url: article.url || '',
+  }));
+};
+
 interface IndexProps {
   selectedCategory?: string;
 }
@@ -25,6 +62,27 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
   const { data: allArticles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: popularArticles = [] } = useQuery({
+    queryKey: ['popularArticles'],
+    queryFn: fetchPopularArticles,
+    refetchInterval: 60000, // Refetch every minute
+  });
+
+  // Track article clicks
+  const trackArticleClick = async (articleUrl: string) => {
+    const { data: article } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('url', articleUrl)
+      .single();
+
+    if (article?.id) {
+      await supabase.from('article_clicks').insert({
+        article_id: article.id
+      });
+    }
+  };
 
   // Filter articles based on category and search query
   const filteredArticles = (allArticles || []).filter(article => {
@@ -70,6 +128,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
                 <ArticleList 
                   articles={paginatedArticles}
                   calculateReadingTime={calculateReadingTime}
+                  onArticleClick={trackArticleClick}
                 />
                 <div className="mt-6">
                   <Pagination
@@ -82,12 +141,18 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
             </div>
           </div>
 
-          <aside className="lg:col-span-1">
-            <div className="sticky top-4 bg-white rounded-lg p-6 shadow-sm">
-              <SearchSidebar 
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-              />
+          <aside className="lg:col-span-1 space-y-6">
+            <div className="sticky top-4 space-y-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <SearchSidebar 
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                />
+              </div>
+              
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <PopularNewsSidebar articles={popularArticles} />
+              </div>
             </div>
           </aside>
         </div>
