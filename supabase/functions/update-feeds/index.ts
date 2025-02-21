@@ -64,7 +64,7 @@ async function updateFeeds() {
         );
 
         const originalUrl = item.link || item.guid || '';
-        console.log(`Original URL for "${title}": ${originalUrl}`); // Debug log
+        console.log(`Original URL for "${title}": ${originalUrl}`);
         
         if (!originalUrl || !title) {
           console.log(`Skipping article "${title}" due to missing URL or title`);
@@ -85,10 +85,10 @@ async function updateFeeds() {
           source: categorySlug,
           author: item.author || item.creator || categorySlug,
           published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
-          url: originalUrl // Ensure we're storing the original URL
+          url: originalUrl
         };
 
-        console.log(`Upserting article:`, article); // Debug log
+        console.log(`Upserting article:`, article);
 
         // Upsert article
         const { error } = await supabase
