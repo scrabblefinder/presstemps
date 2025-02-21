@@ -1,11 +1,8 @@
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { Article } from '@/utils/dbUtils';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Trash2, RefreshCw } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,8 +13,6 @@ interface Category {
 }
 
 export const AdminDashboard = () => {
-  const { isAdmin, isLoading: isCheckingAdmin } = useAdmin();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -25,14 +20,8 @@ export const AdminDashboard = () => {
   const [refreshingSource, setRefreshingSource] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isCheckingAdmin) {
-      if (!isAdmin) {
-        navigate('/');
-      } else {
-        fetchData();
-      }
-    }
-  }, [isAdmin, isCheckingAdmin]);
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -131,19 +120,12 @@ export const AdminDashboard = () => {
     }
   };
 
-  if (isCheckingAdmin) {
+  if (isLoading) {
     return (
       <div className="container mx-auto p-8">
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-1/4" />
-          <Skeleton className="h-[200px] w-full" />
-        </div>
+        <div>Loading...</div>
       </div>
     );
-  }
-
-  if (!isAdmin) {
-    return null;
   }
 
   return (
