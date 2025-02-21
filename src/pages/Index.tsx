@@ -28,24 +28,42 @@ const shuffleArray = (array: any[]) => {
 
 const getCategoryFromSource = (source: string): string => {
   const categoryMap: Record<string, string> = {
+    // US News
+    politico: 'us',
+    hill: 'us',
+    npr: 'us',
+    usatoday: 'us',
+    foxnews: 'us',
+    
+    // Tech
     theverge: 'tech',
     techcrunch: 'tech',
     wired: 'tech',
+    
+    // World
     reuters: 'world',
     ap: 'world',
     bbc: 'world',
     guardian: 'world',
     nytimes: 'world',
     wsj: 'world',
+    
+    // Business
     bloomberg: 'business',
     forbes: 'business',
     economist: 'business',
+    
+    // Science
     nature: 'science',
     newscientist: 'science',
     scientific: 'science',
+    
+    // Entertainment
     variety: 'entertainment',
     hollywood: 'entertainment',
     rollingstone: 'entertainment',
+    
+    // Sports
     espn: 'sports',
     sports_illustrated: 'sports'
   };

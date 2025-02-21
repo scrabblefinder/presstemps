@@ -4,6 +4,13 @@ import { fetchRSSFeeds } from '@/utils/rssUtils';
 import { useToast } from "@/components/ui/use-toast";
 
 const RSS_FEEDS = {
+  // US News
+  politico: 'https://www.politico.com/rss/politicopicks.xml',
+  hill: 'https://thehill.com/rss/syndicator/19110',
+  npr: 'https://feeds.npr.org/1001/rss.xml',
+  usatoday: 'https://rssfeeds.usatoday.com/UsatodaycomNation-TopStories',
+  foxnews: 'https://moxie.foxnews.com/google-publisher/politics.xml',
+  
   // Tech News
   theverge: 'https://www.theverge.com/rss/index.xml',
   techcrunch: 'https://techcrunch.com/feed/',

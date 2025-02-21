@@ -1,6 +1,7 @@
 
 const categories = [
   { name: "All", slug: "all" },
+  { name: "US", slug: "us" },
   { name: "Tech", slug: "tech" },
   { name: "World", slug: "world" },
   { name: "Business", slug: "business" },
