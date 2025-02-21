@@ -17,14 +17,6 @@ const calculateReadingTime = (date: string): number => {
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
 };
 
-const shuffleArray = (array: any[]) => {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-};
-
 const getCategorySlug = (categoryId: number): string => {
   const categoryMap: Record<number, string> = {
     1: 'technology',
@@ -94,10 +86,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <div className="animate-fade-in">
                 <ArticleList 
-                  articles={paginatedArticles.map(article => ({
-                    ...article,
-                    category: getCategorySlug(parseInt(article.category))
-                  }))}
+                  articles={paginatedArticles}
                   calculateReadingTime={calculateReadingTime}
                 />
                 <div className="mt-6">
