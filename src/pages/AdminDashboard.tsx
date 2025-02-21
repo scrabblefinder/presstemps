@@ -25,6 +25,7 @@ export const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
+      console.log('Fetching dashboard data...');
       const [articlesResponse, categoriesResponse] = await Promise.all([
         supabase
           .from('articles')
@@ -39,9 +40,10 @@ export const AdminDashboard = () => {
       if (articlesResponse.error) throw articlesResponse.error;
       if (categoriesResponse.error) throw categoriesResponse.error;
 
+      console.log('Fetched articles:', articlesResponse.data.length);
       const mappedArticles = articlesResponse.data.map(article => ({
         ...article,
-        url: null
+        url: article.url || null
       }));
 
       setArticles(mappedArticles);
@@ -85,6 +87,7 @@ export const AdminDashboard = () => {
   const refreshSource = async (categorySlug: string) => {
     setRefreshingSource(categorySlug);
     try {
+      console.log('Refreshing category:', categorySlug);
       const { error } = await supabase.functions.invoke('update-feeds', {
         body: { category: categorySlug }
       });
@@ -96,10 +99,8 @@ export const AdminDashboard = () => {
         description: `Started refreshing feeds for ${categorySlug}`,
       });
 
-      // Wait a bit for the feeds to update before refetching
-      setTimeout(() => {
-        fetchData();
-      }, 5000);
+      // Immediately fetch new data after the refresh
+      await fetchData();
 
     } catch (error) {
       console.error('Error refreshing feeds:', error);
