@@ -136,18 +136,27 @@ const Index = () => {
   const { data: articles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     setCurrentPage(1);
+    setSearchQuery(''); // Clear search when changing categories
   };
 
   const handleArticleClick = (article: RSSArticle) => {
     window.open(article.url, '_blank', 'noopener,noreferrer');
   };
 
-  // First diversify and filter articles
-  const diversifiedArticles = diversifyArticles(articles || [], selectedCategory);
+  // First filter articles by search query
+  const searchFilteredArticles = (articles || []).filter(article => {
+    if (!searchQuery) return true;
+    const searchContent = `${article.title} ${article.excerpt}`.toLowerCase();
+    return searchContent.includes(searchQuery.toLowerCase());
+  });
+
+  // Then diversify the filtered articles
+  const diversifiedArticles = diversifyArticles(searchFilteredArticles, selectedCategory);
   const totalPages = Math.ceil(diversifiedArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = diversifiedArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
@@ -189,6 +198,8 @@ const Index = () => {
                 <SearchSidebar 
                   articles={articles || []}
                   onArticleClick={handleArticleClick}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
                 />
               </div>
             </aside>

@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { RSSArticle } from '@/utils/types/rssTypes';
@@ -8,11 +7,16 @@ import { Button } from '../ui/button';
 interface SearchSidebarProps {
   articles: RSSArticle[];
   onArticleClick: (article: RSSArticle) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
-export const SearchSidebar = ({ articles, onArticleClick }: SearchSidebarProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  
+export const SearchSidebar = ({ 
+  articles, 
+  onArticleClick, 
+  searchQuery, 
+  onSearchChange 
+}: SearchSidebarProps) => {
   const filteredArticles = articles.filter(article => {
     const searchContent = `${article.title} ${article.excerpt}`.toLowerCase();
     return searchContent.includes(searchQuery.toLowerCase());
@@ -26,7 +30,7 @@ export const SearchSidebar = ({ articles, onArticleClick }: SearchSidebarProps) 
           type="text"
           placeholder="Search articles..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10"
         />
         <Search className="absolute left-3 top-2.5 h-5 w-5 text-ink-light" />
