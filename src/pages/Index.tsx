@@ -129,17 +129,14 @@ const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RS
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
-const Index = () => {
+interface IndexProps {
+  selectedCategory: string;
+}
+
+const Index = ({ selectedCategory }: IndexProps) => {
   const { data: articles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    setCurrentPage(1);
-    setSearchQuery(''); // Clear search when changing categories
-  };
 
   const handleArticleClick = (article: RSSArticle) => {
     window.open(article.url, '_blank', 'noopener,noreferrer');

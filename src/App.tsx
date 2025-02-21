@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
     // Set up auth state listener
@@ -32,6 +33,7 @@ function App() {
 
   const handleCategoryChange = (category: string) => {
     console.log('Category changed:', category);
+    setActiveCategory(category);
   };
 
   if (!isInitialized) {
@@ -41,9 +43,9 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-paper-light">
-        <Header onCategoryChange={handleCategoryChange} activeCategory="all" />
+        <Header onCategoryChange={handleCategoryChange} activeCategory={activeCategory} />
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Index selectedCategory={activeCategory} />} />
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/article/:slug" element={<ArticlePage />} />
           <Route path="/admin" element={<AdminDashboard />} />

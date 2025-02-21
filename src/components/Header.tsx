@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const categories = [
   { name: "All", slug: "all" },
   { name: "US", slug: "us" },
-  { name: "Tech", slug: "tech" },
+  { name: "Technology", slug: "technology" },
   { name: "World", slug: "world" },
   { name: "Business", slug: "business" },
   { name: "Science", slug: "science" },
