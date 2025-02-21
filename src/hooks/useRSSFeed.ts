@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { fetchRSSFeeds } from '@/utils/rssUtils';
 import { useToast } from "@/components/ui/use-toast";
@@ -72,6 +73,11 @@ export const useRSSFeed = (category?: string) => {
           }, []);
 
           console.log('Total articles:', allArticles.length);
+          console.log('Articles by category:', allArticles.reduce((acc, article) => {
+            const category = article.category;
+            acc[category] = (acc[category] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>));
 
           if (allArticles.length === 0) {
             console.warn('No articles found');
