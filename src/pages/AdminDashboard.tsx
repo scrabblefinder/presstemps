@@ -136,7 +136,15 @@ export const AdminDashboard = () => {
   };
 
   if (isCheckingAdmin || (!isAdmin && isLoading)) {
-    return <div className="p-8"><Skeleton className="h-[400px]" /></div>;
+    return (
+      <div className="container mx-auto p-8">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-1/4" />
+          <Skeleton className="h-[200px] w-full" />
+          <Skeleton className="h-[200px] w-full" />
+        </div>
+      </div>
+    );
   }
 
   if (!isAdmin) {
@@ -161,7 +169,7 @@ export const AdminDashboard = () => {
                     onClick={() => refreshSource(category.slug)}
                     disabled={refreshingSource === category.slug}
                   >
-                    <RefreshCw className={refreshingSource === category.slug ? "animate-spin" : ""} />
+                    <RefreshCw className={`mr-2 h-4 w-4 ${refreshingSource === category.slug ? "animate-spin" : ""}`} />
                     Refresh Now
                   </Button>
                 </div>
