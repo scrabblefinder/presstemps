@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { RSSArticle } from "@/utils/rssUtils";
@@ -22,7 +23,6 @@ const calculateReadingTime = (date: string): number => {
 const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
   console.log('Fetching popular articles...');
   
-  // Get the most clicked articles using a direct select with count
   const { data: clickCounts, error: clickError } = await supabase
     .from('article_clicks')
     .select('article_id')
@@ -40,19 +40,19 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
     return [];
   }
 
-  // Count occurrences of each article_id
-  const clickCountMap = clickCounts.reduce((acc, click) => {
+  // Create a Map to count article clicks and maintain uniqueness
+  const clickCountMap = new Map<number, number>();
+  for (const click of clickCounts) {
     if (click.article_id) {
-      acc[click.article_id] = (acc[click.article_id] || 0) + 1;
+      clickCountMap.set(click.article_id, (clickCountMap.get(click.article_id) || 0) + 1);
     }
-    return acc;
-  }, {} as Record<number, number>);
+  }
 
-  // Sort article IDs by click count
-  const sortedArticleIds = Object.entries(clickCountMap)
+  // Get unique article IDs sorted by click count
+  const sortedArticleIds = Array.from(clickCountMap.entries())
     .sort(([, countA], [, countB]) => countB - countA)
     .slice(0, 10)
-    .map(([id]) => Number(id));
+    .map(([id]) => id);
 
   if (sortedArticleIds.length === 0) {
     console.log('No valid article IDs found');
@@ -61,7 +61,6 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
 
   console.log('Fetching articles with IDs:', sortedArticleIds);
 
-  // Fetch the actual articles
   const { data: articles, error: articlesError } = await supabase
     .from('articles')
     .select('*')
@@ -72,12 +71,17 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
     throw articlesError;
   }
 
-  console.log('Found articles:', articles);
-
-  // Sort articles according to their click counts
-  const sortedArticles = articles.sort((a, b) => 
-    (clickCountMap[b.id] || 0) - (clickCountMap[a.id] || 0)
+  // Deduplicate articles based on URL
+  const uniqueArticles = Array.from(
+    new Map(articles.map(article => [article.url, article])).values()
   );
+
+  // Sort unique articles by click count
+  const sortedArticles = uniqueArticles.sort((a, b) => 
+    (clickCountMap.get(b.id) || 0) - (clickCountMap.get(a.id) || 0)
+  );
+
+  console.log('Unique sorted articles:', sortedArticles);
 
   return sortedArticles.map(article => ({
     title: article.title,
@@ -124,25 +128,32 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
     }
   };
 
-  // Filter articles based on category and search query
-  const filteredArticles = (allArticles || []).filter(article => {
-    const matchesCategory = selectedCategory === 'all' || 
-      article.category === selectedCategory;
-    
-    if (!matchesCategory) return false;
+  // Filter and deduplicate articles based on category and search query
+  const filteredArticles = React.useMemo(() => {
+    const articles = (allArticles || []).filter(article => {
+      const matchesCategory = selectedCategory === 'all' || 
+        article.category === selectedCategory;
+      
+      if (!matchesCategory) return false;
 
-    if (!searchQuery) return true;
-    const searchContent = `${article.title} ${article.excerpt}`.toLowerCase();
-    return searchContent.includes(searchQuery.toLowerCase());
-  });
+      if (!searchQuery) return true;
+      const searchContent = `${article.title} ${article.excerpt}`.toLowerCase();
+      return searchContent.includes(searchQuery.toLowerCase());
+    });
 
-  // Sort articles by date
-  const sortedArticles = filteredArticles.sort((a, b) => 
-    new Date(b.date || '').getTime() - new Date(a.date || '').getTime()
-  );
+    // Deduplicate articles based on URL
+    const uniqueArticles = Array.from(
+      new Map(articles.map(article => [article.url, article])).values()
+    );
 
-  const totalPages = Math.ceil(sortedArticles.length / ARTICLES_PER_PAGE);
-  const paginatedArticles = sortedArticles.slice(
+    // Sort by date
+    return uniqueArticles.sort((a, b) => 
+      new Date(b.date || '').getTime() - new Date(a.date || '').getTime()
+    );
+  }, [allArticles, selectedCategory, searchQuery]);
+
+  const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
+  const paginatedArticles = filteredArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
     currentPage * ARTICLES_PER_PAGE
   );
