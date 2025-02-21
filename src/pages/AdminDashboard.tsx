@@ -78,15 +78,29 @@ export const AdminDashboard = () => {
       }));
 
       if (categorySlug) {
-        // Update only the articles for the specific category
+        // Remove existing articles from this category before adding new ones
         setArticles(prevArticles => {
           const otherArticles = prevArticles.filter(article => 
             article.categories?.slug !== categorySlug
           );
-          return [...mappedArticles, ...otherArticles];
+          
+          // Create a Set of existing URLs to prevent duplicates
+          const existingUrls = new Set(otherArticles.map(a => a.url));
+          
+          // Only add new articles that don't already exist
+          const newArticles = mappedArticles.filter(article => 
+            !existingUrls.has(article.url)
+          );
+          
+          return [...newArticles, ...otherArticles];
         });
       } else {
-        setArticles(mappedArticles);
+        // For initial load, just set all articles
+        // Remove duplicates based on URL
+        const uniqueArticles = Array.from(
+          new Map(mappedArticles.map(article => [article.url, article])).values()
+        );
+        setArticles(uniqueArticles);
       }
       
       setCategories(categoriesResponse.data);
