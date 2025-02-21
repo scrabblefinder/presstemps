@@ -1,4 +1,3 @@
-
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { useState } from "react";
 import { RSSArticle } from "@/utils/rssUtils";
@@ -48,10 +47,29 @@ const isScience = (title: string, excerpt: string): boolean => {
 };
 
 const getCategoryFromSource = (source: string, article: RSSArticle): string => {
-  // Convert source to lowercase for case-insensitive matching
+  // Convert source and title to lowercase for case-insensitive matching
   const sourceLower = source.toLowerCase();
+  const titleLower = article.title.toLowerCase();
+  const excerptLower = article.excerpt?.toLowerCase() || '';
   
-  // Define the category mapping
+  // Define the category mapping with more comprehensive keywords
+  if (sourceLower.includes('bloomberg') || 
+      sourceLower.includes('forbes') || 
+      sourceLower.includes('economist') ||
+      sourceLower.includes('cnbc') ||
+      sourceLower.includes('financial') ||
+      sourceLower.includes('market') ||
+      titleLower.includes('stock') ||
+      titleLower.includes('market') ||
+      titleLower.includes('economy') ||
+      titleLower.includes('business') ||
+      excerptLower.includes('billion') ||
+      excerptLower.includes('million') ||
+      excerptLower.includes('revenue') ||
+      excerptLower.includes('profit')) {
+    return 'business';
+  }
+  
   if (sourceLower.includes('verge') || 
       sourceLower.includes('techcrunch') || 
       sourceLower.includes('wired') || 
@@ -66,12 +84,6 @@ const getCategoryFromSource = (source: string, article: RSSArticle): string => {
       sourceLower.includes('nytimes') || 
       sourceLower.includes('wsj')) {
     return 'world';
-  }
-  
-  if (sourceLower.includes('bloomberg') || 
-      sourceLower.includes('forbes') || 
-      sourceLower.includes('economist')) {
-    return 'business';
   }
   
   if (sourceLower.includes('nature') || 
@@ -91,7 +103,7 @@ const getCategoryFromSource = (source: string, article: RSSArticle): string => {
     return 'sports';
   }
 
-  // Check content for US news and science keywords
+  // Check content for US news keywords
   if (isUSNews(article.title, article.excerpt)) {
     return 'us';
   }
@@ -100,8 +112,8 @@ const getCategoryFromSource = (source: string, article: RSSArticle): string => {
     return 'science';
   }
 
-  // Default to 'us' if no other category matches
-  return 'us';
+  // Default to 'world' if no other category matches
+  return 'world';
 };
 
 const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
