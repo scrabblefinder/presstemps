@@ -1,6 +1,6 @@
 
+import React, { useState, useEffect } from "react";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
-import { useState } from "react";
 import { RSSArticle } from "@/utils/rssUtils";
 import { LoadingSkeleton } from "@/components/news/LoadingSkeleton";
 import { ArticleList } from "@/components/news/ArticleList";
@@ -47,7 +47,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
   );
 
   // Reset to first page when category changes
-  React.useEffect(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory]);
 
