@@ -1,32 +1,28 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AdminDashboard } from "@/pages/AdminDashboard";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Index } from "@/pages/Index";
+import { CategoryPage } from "@/pages/CategoryPage";
+import { ArticlePage } from "@/pages/ArticlePage";
+import { NotFound } from "@/pages/NotFound";
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import CategoryPage from "./pages/CategoryPage";
-import ArticlePage from "./pages/ArticlePage";
-import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-paper-light">
+        <Header />
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/:category" element={<CategoryPage />} />
-          <Route path="/:category/:slug" element={<ArticlePage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/category/:slug" element={<CategoryPage />} />
+          <Route path="/article/:slug" element={<ArticlePage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        <Footer />
+      </div>
+    </Router>
+  );
+}
 
 export default App;
