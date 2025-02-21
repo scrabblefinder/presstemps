@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { RSSArticle } from "./types/rssTypes";
 
 export interface Article {
   id: number;
@@ -15,8 +16,25 @@ export interface Article {
   published_at: string | null;
   created_at: string;
   updated_at: string;
-  url?: string | null;  // Added this field
+  url?: string | null;
+  categories?: {
+    name: string;
+    slug: string;
+  };
 }
+
+const mapArticleToRSSArticle = (article: Article): RSSArticle => {
+  return {
+    title: article.title,
+    excerpt: article.excerpt || '',
+    image: article.image_url,
+    category: article.categories?.slug || 'general',
+    source: article.source || 'unknown',
+    date: article.published_at || article.created_at,
+    author: article.author || 'unknown',
+    url: article.url || `/${article.categories?.slug || 'general'}/${article.slug}`,
+  };
+};
 
 export const saveArticle = async (article: Omit<Article, 'id' | 'created_at' | 'updated_at'>) => {
   const { data, error } = await supabase
@@ -32,7 +50,7 @@ export const saveArticle = async (article: Omit<Article, 'id' | 'created_at' | '
   return data;
 };
 
-export const fetchArticles = async (category?: string) => {
+export const fetchArticles = async (category?: string): Promise<RSSArticle[]> => {
   console.log('Fetching articles for category:', category);
 
   let query = supabase
@@ -46,7 +64,7 @@ export const fetchArticles = async (category?: string) => {
     `)
     .order('published_at', { ascending: false });
 
-  if (category) {
+  if (category && category !== 'all') {
     const { data: categoryData } = await supabase
       .from('categories')
       .select('id')
@@ -66,10 +84,10 @@ export const fetchArticles = async (category?: string) => {
   }
   
   console.log('Query result:', data);
-  return data as (Article & { categories: { name: string; slug: string } })[];
+  return (data as Article[]).map(mapArticleToRSSArticle);
 };
 
-export const fetchArticleBySlug = async (slug: string) => {
+export const fetchArticleBySlug = async (slug: string): Promise<RSSArticle> => {
   const { data, error } = await supabase
     .from('articles')
     .select(`
@@ -83,7 +101,7 @@ export const fetchArticleBySlug = async (slug: string) => {
     .single();
 
   if (error) throw error;
-  return data as Article & { categories: { name: string; slug: string } };
+  return mapArticleToRSSArticle(data as Article);
 };
 
 export const getCategoryId = async (slug: string): Promise<number> => {
