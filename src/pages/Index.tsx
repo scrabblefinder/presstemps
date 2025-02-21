@@ -1,3 +1,4 @@
+
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { useState } from "react";
 import { RSSArticle } from "@/utils/rssUtils";
@@ -47,60 +48,70 @@ const isScience = (title: string, excerpt: string): boolean => {
 };
 
 const getCategoryFromSource = (source: string, article: RSSArticle): string => {
-  const baseCategory = {
-    // Technology (changed from 'tech')
-    theverge: 'technology',
-    techcrunch: 'technology',
-    wired: 'technology',
-    
-    // World
-    reuters: 'world',
-    ap: 'world',
-    bbc: 'world',
-    guardian: 'world',
-    nytimes: 'world',
-    wsj: 'world',
-    
-    // Business
-    bloomberg: 'business',
-    forbes: 'business',
-    economist: 'business',
-    
-    // Science
-    nature: 'science',
-    newscientist: 'science',
-    scientific: 'science',
-    
-    // Entertainment
-    variety: 'entertainment',
-    hollywood: 'entertainment',
-    rollingstone: 'entertainment',
-    
-    // Sports
-    espn: 'sports',
-    sports_illustrated: 'sports'
-  }[source] || 'us';
-
-  // For US news sources, check content to determine if it's really US news
-  if (['politico', 'hill', 'npr', 'usatoday', 'foxnews'].includes(source)) {
-    if (isUSNews(article.title, article.excerpt)) {
-      return 'us';
-    }
-    if (isScience(article.title, article.excerpt)) {
-      return 'science';
-    }
-    // For these sources, if not clearly US or Science, default to US
-    return 'us';
+  // Convert source to lowercase for case-insensitive matching
+  const sourceLower = source.toLowerCase();
+  
+  // Define the category mapping
+  if (sourceLower.includes('verge') || 
+      sourceLower.includes('techcrunch') || 
+      sourceLower.includes('wired') || 
+      sourceLower.includes('tech')) {
+    return 'technology';
+  }
+  
+  if (sourceLower.includes('reuters') || 
+      sourceLower.includes('ap') || 
+      sourceLower.includes('bbc') || 
+      sourceLower.includes('guardian') || 
+      sourceLower.includes('nytimes') || 
+      sourceLower.includes('wsj')) {
+    return 'world';
+  }
+  
+  if (sourceLower.includes('bloomberg') || 
+      sourceLower.includes('forbes') || 
+      sourceLower.includes('economist')) {
+    return 'business';
+  }
+  
+  if (sourceLower.includes('nature') || 
+      sourceLower.includes('scientist') || 
+      sourceLower.includes('science')) {
+    return 'science';
+  }
+  
+  if (sourceLower.includes('variety') || 
+      sourceLower.includes('hollywood') || 
+      sourceLower.includes('rollingstone')) {
+    return 'entertainment';
+  }
+  
+  if (sourceLower.includes('espn') || 
+      sourceLower.includes('sports')) {
+    return 'sports';
   }
 
-  return baseCategory;
+  // Check content for US news and science keywords
+  if (isUSNews(article.title, article.excerpt)) {
+    return 'us';
+  }
+  
+  if (isScience(article.title, article.excerpt)) {
+    return 'science';
+  }
+
+  // Default to 'us' if no other category matches
+  return 'us';
 };
 
 const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
   // First filter articles by selected category
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
-    : articles.filter(article => getCategoryFromSource(article.category, article) === selectedCategory);
+    : articles.filter(article => {
+        const category = getCategoryFromSource(article.category, article);
+        return category === selectedCategory;
+      });
 
   // Group articles by source within the filtered category
   const articlesBySource = filteredArticles.reduce((acc, article) => {
@@ -169,7 +180,10 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <div className="animate-fade-in">
                 <ArticleList 
-                  articles={paginatedArticles}
+                  articles={paginatedArticles.map(article => ({
+                    ...article,
+                    category: getCategoryFromSource(article.category, article)
+                  }))}
                   calculateReadingTime={calculateReadingTime}
                 />
                 <div className="mt-6">
