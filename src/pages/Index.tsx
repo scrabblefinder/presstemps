@@ -1,3 +1,4 @@
+
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { useState } from "react";
 import { RSSArticle } from "@/utils/rssUtils";
@@ -24,96 +25,18 @@ const shuffleArray = (array: any[]) => {
   return array;
 };
 
-const isUSNews = (title: string, excerpt: string): boolean => {
-  const usKeywords = [
-    'congress', 'senate', 'house', 'biden', 'trump', 'washington',
-    'america', 'american', 'u.s.', 'united states', 'federal',
-    'democrat', 'republican', 'gop', 'white house'
-  ];
-  
-  const content = (title + ' ' + excerpt).toLowerCase();
-  return usKeywords.some(keyword => content.includes(keyword.toLowerCase()));
-};
-
-const isScience = (title: string, excerpt: string): boolean => {
-  const scienceKeywords = [
-    'research', 'study', 'science', 'scientist', 'discovery',
-    'space', 'physics', 'chemistry', 'biology', 'medicine',
-    'technology', 'innovation', 'experiment', 'laboratory'
-  ];
-  
-  const content = (title + ' ' + excerpt).toLowerCase();
-  return scienceKeywords.some(keyword => content.includes(keyword.toLowerCase()));
-};
-
-const getCategoryFromSource = (source: string, article: RSSArticle): string => {
-  // Convert source and title to lowercase for case-insensitive matching
-  const sourceLower = source.toLowerCase();
-  const titleLower = article.title.toLowerCase();
-  const excerptLower = article.excerpt?.toLowerCase() || '';
-  
-  // Define the category mapping with more comprehensive keywords
-  if (sourceLower.includes('bloomberg') || 
-      sourceLower.includes('forbes') || 
-      sourceLower.includes('economist') ||
-      sourceLower.includes('cnbc') ||
-      sourceLower.includes('financial') ||
-      sourceLower.includes('market') ||
-      titleLower.includes('stock') ||
-      titleLower.includes('market') ||
-      titleLower.includes('economy') ||
-      titleLower.includes('business') ||
-      excerptLower.includes('billion') ||
-      excerptLower.includes('million') ||
-      excerptLower.includes('revenue') ||
-      excerptLower.includes('profit')) {
-    return 'business';
-  }
-  
-  if (sourceLower.includes('verge') || 
-      sourceLower.includes('techcrunch') || 
-      sourceLower.includes('wired') || 
-      sourceLower.includes('tech')) {
-    return 'technology';
-  }
-  
-  if (sourceLower.includes('reuters') || 
-      sourceLower.includes('ap') || 
-      sourceLower.includes('bbc') || 
-      sourceLower.includes('guardian') || 
-      sourceLower.includes('nytimes') || 
-      sourceLower.includes('wsj')) {
-    return 'world';
-  }
-  
-  if (sourceLower.includes('nature') || 
-      sourceLower.includes('scientist') || 
-      sourceLower.includes('science')) {
-    return 'science';
-  }
-  
-  if (sourceLower.includes('variety') || 
-      sourceLower.includes('hollywood') || 
-      sourceLower.includes('rollingstone')) {
-    return 'entertainment';
-  }
-  
-  if (sourceLower.includes('espn') || 
-      sourceLower.includes('sports')) {
-    return 'sports';
-  }
-
-  // Check content for US news keywords
-  if (isUSNews(article.title, article.excerpt)) {
-    return 'us';
-  }
-  
-  if (isScience(article.title, article.excerpt)) {
-    return 'science';
-  }
-
-  // Default to 'world' if no other category matches
-  return 'world';
+const getCategorySlug = (categoryId: number): string => {
+  const categoryMap: Record<number, string> = {
+    1: 'technology',
+    2: 'science',
+    3: 'business',
+    4: 'entertainment',
+    5: 'world', // Latest News
+    6: 'us', // Politics
+    8: 'sports',
+    10: 'lifestyle'
+  };
+  return categoryMap[categoryId] || 'world';
 };
 
 const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
@@ -121,13 +44,13 @@ const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RS
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
     : articles.filter(article => {
-        const category = getCategoryFromSource(article.category, article);
-        return category === selectedCategory;
+        const categorySlug = getCategorySlug(parseInt(article.category));
+        return categorySlug === selectedCategory;
       });
 
   // Group articles by source within the filtered category
   const articlesBySource = filteredArticles.reduce((acc, article) => {
-    const source = article.category;
+    const source = article.source;
     if (!acc[source]) {
       acc[source] = [];
     }
@@ -194,7 +117,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
                 <ArticleList 
                   articles={paginatedArticles.map(article => ({
                     ...article,
-                    category: getCategoryFromSource(article.category, article)
+                    category: getCategorySlug(parseInt(article.category))
                   }))}
                   calculateReadingTime={calculateReadingTime}
                 />
