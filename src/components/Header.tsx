@@ -1,6 +1,14 @@
 
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+const categories = [
+  { name: "All", slug: "all" },
+  { name: "US", slug: "us" },
+  { name: "Tech", slug: "tech" },
+  { name: "World", slug: "world" },
+  { name: "Business", slug: "business" },
+  { name: "Science", slug: "science" },
+  { name: "Entertainment", slug: "entertainment" },
+  { name: "Sports", slug: "sports" }
+];
 
 interface HeaderProps {
   onCategoryChange: (category: string) => void;
@@ -9,42 +17,32 @@ interface HeaderProps {
 
 export function Header({ onCategoryChange, activeCategory }: HeaderProps) {
   return (
-    <header className="bg-white">
-      <div className="container mx-auto px-4 flex justify-between items-center h-16">
-        <div className="flex-1">
-          {/* Left side empty for centering */}
-        </div>
-        <Link to="/" className="text-2xl font-bold text-ink-light flex-1 text-center">
-          PressTemps
-        </Link>
-        <div className="flex-1 flex justify-end">
-          <Link to="/auth">
-            <Button variant="ghost" className="text-gray-600 hover:text-black">
-              Sign In
-            </Button>
-          </Link>
-        </div>
-      </div>
-      
-      <div className="border-t">
-        <nav className="container mx-auto px-4">
-          <ul className="flex gap-8 py-4">
-            <li>
-              <Button
-                variant={activeCategory === 'all' ? 'default' : 'ghost'}
-                className={activeCategory === 'all' ? 'bg-black text-white hover:bg-black/90' : 'text-gray-600 hover:text-black'}
-                onClick={() => onCategoryChange('all')}
-              >
-                All
-              </Button>
-            </li>
-            {['tech', 'world', 'business', 'science', 'entertainment', 'sports', 'us'].map((category) => (
-              <li key={category}>
+    <header className="w-full bg-paper-light border-b border-paper-dark">
+      <div className="container mx-auto px-4">
+        <button 
+          onClick={() => onCategoryChange('all')}
+          className="block text-center w-full"
+        >
+          <h1 className="font-playfair text-5xl md:text-6xl lg:text-7xl font-bold text-ink-dark hover:text-ink transition-colors">
+            PressTemps
+          </h1>
+          <p className="mt-2 text-ink-light font-inter text-sm tracking-wider">
+            YOUR SOURCE FOR LATEST NEWS
+          </p>
+        </button>
+        <nav className="py-4 border-y border-paper-dark">
+          <ul className="flex flex-wrap justify-center items-center gap-6 md:gap-8 lg:gap-12">
+            {categories.map((category) => (
+              <li key={category.slug}>
                 <button
-                  className={`text-gray-600 hover:text-black ${activeCategory === category ? 'text-black' : ''}`}
-                  onClick={() => onCategoryChange(category)}
+                  onClick={() => onCategoryChange(category.slug)}
+                  className={`font-inter text-sm md:text-base uppercase tracking-wide transition-colors ${
+                    activeCategory === category.slug 
+                    ? 'text-blue-600 font-medium' 
+                    : 'text-ink-light hover:text-ink-dark'
+                  }`}
                 >
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                  {category.name}
                 </button>
               </li>
             ))}
