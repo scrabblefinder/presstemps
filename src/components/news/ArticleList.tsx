@@ -32,7 +32,7 @@ export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps
       espn: 'Sports',
       sports_illustrated: 'Sports'
     };
-    return categoryMap[category] || 'General';
+    return categoryMap[category] || 'US';
   };
 
   return (
