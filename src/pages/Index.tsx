@@ -81,7 +81,7 @@ const getCategoryFromSource = (source: string, article: RSSArticle): string => {
     // Sports
     espn: 'sports',
     sports_illustrated: 'sports'
-  }[source] || 'general';
+  }[source] || 'us'; // Changed default from 'general' to 'us'
 
   // For US news sources, check content to determine if it's really US news
   if (['politico', 'hill', 'npr', 'usatoday', 'foxnews'].includes(source)) {
