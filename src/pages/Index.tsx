@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { RSSArticle } from "@/utils/rssUtils";
@@ -23,15 +22,13 @@ const calculateReadingTime = (date: string): number => {
 const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
   console.log('Fetching popular articles...');
   
-  // First, get the most clicked articles
+  // Get the most clicked articles using a direct select with count
   const { data: clickCounts, error: clickError } = await supabase
     .from('article_clicks')
-    .select('article_id, count(*)', { count: 'exact' })
-    .groupBy('article_id')
-    .order('count', { ascending: false })
-    .limit(10);
+    .select('article_id')
+    .not('article_id', 'is', null);
 
-  console.log('Click counts:', clickCounts);
+  console.log('Click data:', clickCounts);
 
   if (clickError) {
     console.error('Error fetching click counts:', clickError);
@@ -43,20 +40,32 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
     return [];
   }
 
-  const articleIds = clickCounts.map(click => click.article_id).filter(Boolean);
-  
-  if (articleIds.length === 0) {
+  // Count occurrences of each article_id
+  const clickCountMap = clickCounts.reduce((acc, click) => {
+    if (click.article_id) {
+      acc[click.article_id] = (acc[click.article_id] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<number, number>);
+
+  // Sort article IDs by click count
+  const sortedArticleIds = Object.entries(clickCountMap)
+    .sort(([, countA], [, countB]) => countB - countA)
+    .slice(0, 10)
+    .map(([id]) => Number(id));
+
+  if (sortedArticleIds.length === 0) {
     console.log('No valid article IDs found');
     return [];
   }
 
-  console.log('Fetching articles with IDs:', articleIds);
+  console.log('Fetching articles with IDs:', sortedArticleIds);
 
-  // Then fetch the actual articles
+  // Fetch the actual articles
   const { data: articles, error: articlesError } = await supabase
     .from('articles')
     .select('*')
-    .in('id', articleIds);
+    .in('id', sortedArticleIds);
 
   if (articlesError) {
     console.error('Error fetching articles:', articlesError);
@@ -65,7 +74,12 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
 
   console.log('Found articles:', articles);
 
-  return articles.map(article => ({
+  // Sort articles according to their click counts
+  const sortedArticles = articles.sort((a, b) => 
+    (clickCountMap[b.id] || 0) - (clickCountMap[a.id] || 0)
+  );
+
+  return sortedArticles.map(article => ({
     title: article.title,
     excerpt: article.excerpt || '',
     image: article.image_url,
