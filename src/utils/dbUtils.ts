@@ -69,12 +69,13 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
   let query = supabase
     .from('articles')
     .select(`
-      *,
+      distinct on (slug) *,
       categories:category_id (
         name,
         slug
       )
     `)
+    .order('slug')
     .order('published_at', { ascending: false });
 
   if (category && category !== 'all') {
