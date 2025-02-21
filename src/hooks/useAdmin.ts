@@ -11,26 +11,39 @@ export const useAdmin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         
+        if (userError) {
+          throw userError;
+        }
+
         if (!user) {
+          console.log('No user found');
           setIsAdmin(false);
-          setIsLoading(false);
           return;
         }
 
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select()
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
+        console.log('Checking admin status for user:', user.id);
 
-        if (error) {
-          throw error;
+        // Check admin role
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+
+        if (roleError) {
+          throw roleError;
         }
 
-        setIsAdmin(!!data);
+        console.log('Role data:', roleData);
+        
+        // Set admin status if role is found
+        const hasAdminRole = roleData?.role === 'admin';
+        console.log('Is admin:', hasAdminRole);
+        setIsAdmin(hasAdminRole);
+
       } catch (error) {
         console.error('Error checking admin status:', error);
         toast({
@@ -44,11 +57,12 @@ export const useAdmin = () => {
       }
     };
 
-    // Initial check
+    // Check immediately
     checkAdminStatus();
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    // Also check when auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       checkAdminStatus();
     });
 

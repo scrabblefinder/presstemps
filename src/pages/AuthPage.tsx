@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,26 +29,38 @@ export function AuthPage() {
           description: "Please check your email to verify your account",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
+
+        console.log('Logged in user:', user?.id);
         
         // Check if user has admin role
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+          .eq('user_id', user?.id)
           .single();
 
+        console.log('User role data:', roleData);
+
         if (roleData?.role === 'admin') {
+          console.log('Redirecting to admin dashboard');
           navigate('/admin');
         } else {
+          console.log('Redirecting to home');
           navigate('/');
         }
+
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
         title: "Error",
         description: error.message,
