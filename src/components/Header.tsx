@@ -19,19 +19,17 @@ export function Header({ onCategoryChange, activeCategory }: HeaderProps) {
   return (
     <header className="w-full bg-paper-light border-b border-paper-dark">
       <div className="container mx-auto px-4">
-        <div className="py-8">
-          <button 
-            onClick={() => onCategoryChange('all')}
-            className="block text-center w-full"
-          >
-            <h1 className="font-playfair text-5xl md:text-6xl lg:text-7xl font-bold text-ink-dark hover:text-ink transition-colors">
-              PressTemps
-            </h1>
-            <p className="mt-2 text-ink-light font-inter text-sm tracking-wider">
-              YOUR SOURCE FOR LATEST NEWS
-            </p>
-          </button>
-        </div>
+        <button 
+          onClick={() => onCategoryChange('all')}
+          className="block text-center w-full"
+        >
+          <h1 className="font-playfair text-5xl md:text-6xl lg:text-7xl font-bold text-ink-dark hover:text-ink transition-colors">
+            PressTemps
+          </h1>
+          <p className="mt-2 text-ink-light font-inter text-sm tracking-wider">
+            YOUR SOURCE FOR LATEST NEWS
+          </p>
+        </button>
         <nav className="py-4 border-y border-paper-dark">
           <ul className="flex flex-wrap justify-center items-center gap-6 md:gap-8 lg:gap-12">
             {categories.map((category) => (
