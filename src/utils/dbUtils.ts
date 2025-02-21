@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { RSSArticle } from "./types/rssTypes";
 
@@ -31,14 +32,15 @@ const mapArticleToRSSArticle = (article: Article): RSSArticle => {
   console.log('Mapping article:', {
     title: article.title,
     originalUrl: article.url,
-    fallbackUrl: fallbackUrl
+    fallbackUrl: fallbackUrl,
+    categoryId: article.category_id // Log the category_id
   });
 
   return {
     title: article.title,
     excerpt: article.excerpt || '',
     image: article.image_url,
-    category: article.categories?.slug || 'general',
+    category: article.category_id.toString(), // Convert category_id to string
     source: article.source || 'unknown',
     date: article.published_at || article.created_at,
     author: article.author || 'unknown',
