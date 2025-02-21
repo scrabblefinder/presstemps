@@ -9,18 +9,21 @@ interface ArticleListProps {
 
 export const ArticleList = ({ articles, calculateReadingTime }: ArticleListProps) => {
   // Helper function to get category display name
-  const getCategoryDisplayName = (category: string): string => {
-    const categoryMap: Record<string, string> = {
-      'technology': 'Technology',
-      'science': 'Science',
-      'business': 'Business',
-      'entertainment': 'Entertainment',
-      'world': 'World News',
-      'us': 'Politics',
-      'sports': 'Sports',
-      'lifestyle': 'Lifestyle'
+  const getCategoryDisplayName = (categoryId: string | number): string => {
+    // Convert string to number if it's a numeric string
+    const id = typeof categoryId === 'string' ? parseInt(categoryId) : categoryId;
+    
+    const categoryMap: Record<number, string> = {
+      1: 'Technology',
+      2: 'Science',
+      3: 'Business',
+      4: 'Entertainment',
+      5: 'World News',
+      6: 'Politics',
+      8: 'Sports',
+      10: 'Lifestyle'
     };
-    return categoryMap[category] || category;
+    return categoryMap[id] || 'Uncategorized';
   };
 
   return (
