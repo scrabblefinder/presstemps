@@ -81,14 +81,35 @@ const decodeHTMLEntities = (text: string): string => {
 const extractImageFromContent = (content: string | undefined): string | null => {
   if (!content || typeof content !== 'string') return null;
   
-  // Try to find any image URL in the content
-  const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
-  if (imgMatch) return imgMatch[1];
-  
-  // Try to find a media:content tag
-  const mediaMatch = content.match(/<media:content[^>]+url="([^">]+)"/);
-  if (mediaMatch) return mediaMatch[1];
-  
+  // Try to find image URLs in different formats
+  const patterns = [
+    // Standard img tag
+    /<img[^>]+src="([^">]+)"/,
+    // Image URL in single quotes
+    /<img[^>]+src='([^'>]+)'/,
+    // Media content URL
+    /<media:content[^>]+url="([^">]+)"/,
+    // Media content URL in single quotes
+    /<media:content[^>]+url='([^'>]+)'/,
+    // Media thumbnail
+    /<media:thumbnail[^>]+url="([^">]+)"/,
+    // Media thumbnail in single quotes
+    /<media:thumbnail[^>]+url='([^'>]+)'/,
+    // Figure tag with image
+    /<figure[^>]*>.*?<img[^>]+src="([^">]+)".*?<\/figure>/,
+    // Data-src attribute (common in lazy-loaded images)
+    /<img[^>]+data-src="([^">]+)"/,
+    // Simple URL pattern
+    /https?:\/\/[^"'\s>)]+\.(?:jpg|jpeg|png|gif|webp)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = content.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
   return null;
 };
 
@@ -126,29 +147,58 @@ export const fetchRSSFeeds = async (url: string, categorySlug: string): Promise<
     const articles = itemArray.slice(0, 10).map((item: any) => {
       let image = null;
       
-      // Try different possible image locations
+      // Try multiple approaches to find the image
+      
+      // 1. Check media:content
       if (item['media:content']) {
         const mediaContent = Array.isArray(item['media:content']) 
           ? item['media:content'][0] 
           : item['media:content'];
-        image = mediaContent?.["@_url"];
-      } 
-      
-      if (!image && item['media:thumbnail']) {
-        image = item['media:thumbnail']?.["@_url"];
+        image = mediaContent?.["@_url"] || mediaContent?.url;
       }
       
+      // 2. Check media:thumbnail
+      if (!image && item['media:thumbnail']) {
+        const mediaThumbnail = Array.isArray(item['media:thumbnail'])
+          ? item['media:thumbnail'][0]
+          : item['media:thumbnail'];
+        image = mediaThumbnail?.["@_url"] || mediaThumbnail?.url;
+      }
+      
+      // 3. Check enclosure
       if (!image && item.enclosure) {
-        image = item.enclosure?.["@_url"];
+        const enclosure = Array.isArray(item.enclosure)
+          ? item.enclosure[0]
+          : item.enclosure;
+        if (enclosure?.["@_type"]?.startsWith('image/')) {
+          image = enclosure?.["@_url"];
+        }
+      }
+      
+      // 4. Check image object
+      if (!image && item.image) {
+        image = item.image?.url || item.image?.["@_url"];
+      }
+      
+      // 5. Check content:encoded or description for embedded images
+      if (!image) {
+        const contentEncoded = item['content:encoded'] || '';
+        image = extractImageFromContent(contentEncoded);
       }
       
       if (!image) {
-        const content = item['content:encoded'] || item.content || item.description;
+        const content = item.content || '';
         image = extractImageFromContent(content);
       }
+      
+      if (!image) {
+        const description = item.description || '';
+        image = extractImageFromContent(description);
+      }
 
-      // Use default image if no image was found
-      if (!image || !image.startsWith('http')) {
+      // Only use default image if no valid image URL was found
+      if (!image || !image.match(/^https?:\/\//)) {
+        console.log(`No valid image found for article in ${categorySlug}, using default`);
         image = getDefaultImage(categorySlug);
       }
 
@@ -172,7 +222,8 @@ export const fetchRSSFeeds = async (url: string, categorySlug: string): Promise<
       };
     }).filter(item => item.title && item.url);
 
-    console.log(`Success: ${categorySlug} - ${articles.length} articles`);
+    console.log(`Success: ${categorySlug} - ${articles.length} articles, with images:`, 
+      articles.filter(a => a.image && !a.image.includes('unsplash.com')).length);
     return articles;
 
   } catch (error) {
