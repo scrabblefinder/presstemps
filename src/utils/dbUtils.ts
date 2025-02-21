@@ -24,6 +24,10 @@ export interface Article {
 }
 
 const mapArticleToRSSArticle = (article: Article): RSSArticle => {
+  if (!article.url) {
+    console.warn('Article missing URL:', article.title);
+  }
+  
   return {
     title: article.title,
     excerpt: article.excerpt || '',
@@ -32,7 +36,7 @@ const mapArticleToRSSArticle = (article: Article): RSSArticle => {
     source: article.source || 'unknown',
     date: article.published_at || article.created_at,
     author: article.author || 'unknown',
-    url: article.url || '', // Use the original URL stored in the database
+    url: article.url || '', // Make sure we're using the stored URL
   };
 };
 

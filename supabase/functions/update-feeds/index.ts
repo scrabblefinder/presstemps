@@ -64,27 +64,36 @@ async function updateFeeds() {
         );
 
         const originalUrl = item.link || item.guid || '';
-        if (!originalUrl || !title) continue;
+        console.log(`Original URL for "${title}": ${originalUrl}`); // Debug log
+        
+        if (!originalUrl || !title) {
+          console.log(`Skipping article "${title}" due to missing URL or title`);
+          continue;
+        }
 
         // Create URL-friendly slug
         const slug = `${categorySlug}-${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`;
 
-        // Upsert article with original URL
+        const article = {
+          slug,
+          title,
+          content,
+          excerpt: cleanDescription(content),
+          image_url: image,
+          original_image_url: image,
+          category_id: categoryData.id,
+          source: categorySlug,
+          author: item.author || item.creator || categorySlug,
+          published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
+          url: originalUrl // Ensure we're storing the original URL
+        };
+
+        console.log(`Upserting article:`, article); // Debug log
+
+        // Upsert article
         const { error } = await supabase
           .from('articles')
-          .upsert({
-            slug,
-            title,
-            content,
-            excerpt: cleanDescription(content),
-            image_url: image,
-            original_image_url: image,
-            category_id: categoryData.id,
-            source: categorySlug,
-            author: item.author || item.creator || categorySlug,
-            published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
-            url: originalUrl // Store the original URL
-          }, {
+          .upsert(article, {
             onConflict: 'slug'
           });
 
