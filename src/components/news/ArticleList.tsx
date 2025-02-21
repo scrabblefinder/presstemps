@@ -28,7 +28,7 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
       2: 'Science',
       3: 'Business',
       4: 'Entertainment',
-      5: 'World News',
+      5: 'World News',  // Updated from 'World' to 'World News'
       6: 'Politics',
       7: 'US',
       8: 'Sports',
