@@ -1,9 +1,6 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 interface HeaderProps {
   onCategoryChange: (category: string) => void;
@@ -11,19 +8,6 @@ interface HeaderProps {
 }
 
 export function Header({ onCategoryChange, activeCategory }: HeaderProps) {
-  const { toast } = useToast();
-  
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error signing out",
-        description: error.message,
-      });
-    }
-  };
-
   return (
     <header className="bg-white">
       <div className="container mx-auto px-4 flex justify-between items-center h-16">
