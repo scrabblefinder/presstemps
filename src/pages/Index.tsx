@@ -48,31 +48,10 @@ const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RS
         return categorySlug === selectedCategory;
       });
 
-  // Group articles by source within the filtered category
-  const articlesBySource = filteredArticles.reduce((acc, article) => {
-    const source = article.source;
-    if (!acc[source]) {
-      acc[source] = [];
-    }
-    acc[source].push({
-      ...article,
-      date: article.date || new Date().toISOString() // Ensure we have a date for sorting
-    });
-    return acc;
-  }, {} as Record<string, RSSArticle[]>);
-
-  // Take up to 3 most recent articles from each source and sort by date
-  const diversifiedArticles: RSSArticle[] = [];
-  Object.values(articlesBySource).forEach(sourceArticles => {
-    const recentSourceArticles = sourceArticles
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
-    diversifiedArticles.push(...recentSourceArticles);
-  });
-
-  // Final shuffle and sort by date for the selected category
-  return shuffleArray(diversifiedArticles)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Sort all articles by date
+  return filteredArticles.sort((a, b) => 
+    new Date(b.date || '').getTime() - new Date(a.date || '').getTime()
+  );
 };
 
 interface IndexProps {
