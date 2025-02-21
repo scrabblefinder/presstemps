@@ -86,6 +86,38 @@ export type Database = {
         }
         Relationships: []
       }
+      feeds: {
+        Row: {
+          category_id: number
+          created_at: string | null
+          id: number
+          name: string
+          url: string
+        }
+        Insert: {
+          category_id: number
+          created_at?: string | null
+          id?: number
+          name: string
+          url: string
+        }
+        Update: {
+          category_id?: number
+          created_at?: string | null
+          id?: number
+          name?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeds_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
