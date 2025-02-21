@@ -43,7 +43,7 @@ export const AdminDashboard = () => {
       console.log('Fetched articles:', articlesResponse.data.length);
       const mappedArticles = articlesResponse.data.map(article => ({
         ...article,
-        url: article.url || null
+        url: article.url ?? null // Use nullish coalescing to ensure null if url doesn't exist
       }));
 
       setArticles(mappedArticles);
