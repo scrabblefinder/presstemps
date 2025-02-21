@@ -24,10 +24,17 @@ export interface Article {
 }
 
 const mapArticleToRSSArticle = (article: Article): RSSArticle => {
-  if (!article.url) {
-    console.warn('Article missing URL:', article.title);
-  }
-  
+  // Create a fallback URL using the source and title if no URL is present
+  const fallbackUrl = article.source && article.title 
+    ? `https://${article.source}.com/article/${article.slug}`
+    : '';
+    
+  console.log('Mapping article:', {
+    title: article.title,
+    originalUrl: article.url,
+    fallbackUrl: fallbackUrl
+  });
+
   return {
     title: article.title,
     excerpt: article.excerpt || '',
@@ -36,7 +43,7 @@ const mapArticleToRSSArticle = (article: Article): RSSArticle => {
     source: article.source || 'unknown',
     date: article.published_at || article.created_at,
     author: article.author || 'unknown',
-    url: article.url || '', // Make sure we're using the stored URL
+    url: article.url || fallbackUrl, // Use fallback URL if no original URL exists
   };
 };
 
@@ -87,8 +94,11 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
     throw error;
   }
   
-  console.log('Query result:', data);
-  return (data as Article[]).map(mapArticleToRSSArticle);
+  console.log('Articles from database:', data);
+  const mappedArticles = (data as Article[]).map(mapArticleToRSSArticle);
+  console.log('Mapped articles:', mappedArticles);
+  
+  return mappedArticles;
 };
 
 export const fetchArticleBySlug = async (slug: string): Promise<RSSArticle> => {
