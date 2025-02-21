@@ -8,12 +8,35 @@ import CategoryPage from "@/pages/CategoryPage";
 import { ArticlePage } from "@/pages/ArticlePage";
 import NotFound from "@/pages/NotFound";
 import { AuthPage } from "@/pages/AuthPage";
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 function App() {
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      if (event === 'SIGNED_OUT') {
+        // Handle sign out if needed
+      }
+    });
+
+    setIsInitialized(true);
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const handleCategoryChange = (category: string) => {
     console.log('Category changed:', category);
-    // We'll implement this later if needed at the app level
   };
+
+  if (!isInitialized) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <Router>

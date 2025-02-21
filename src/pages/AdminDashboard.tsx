@@ -25,13 +25,17 @@ export const AdminDashboard = () => {
   const [refreshingSource, setRefreshingSource] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if admin and redirect if not
     if (!isCheckingAdmin && !isAdmin) {
+      console.log('Not admin, redirecting to home');
       navigate('/');
     }
   }, [isAdmin, isCheckingAdmin, navigate]);
 
   useEffect(() => {
+    // Only fetch data if user is admin
     if (isAdmin) {
+      console.log('User is admin, fetching data');
       fetchData();
     }
   }, [isAdmin]);
