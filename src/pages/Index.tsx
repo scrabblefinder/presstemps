@@ -11,11 +11,10 @@ import { Pagination } from "@/components/news/Pagination";
 const ARTICLES_PER_PAGE = 10;
 
 const calculateReadingTime = (date: string): number => {
-  if (!date) return 3; // Default reading time
+  if (!date) return 3;
   const now = new Date();
   const published = new Date(date);
   const diffInMinutes = Math.ceil((now.getTime() - published.getTime()) / (1000 * 60));
-  // Cap reading time between 2 and 8 minutes
   return Math.min(Math.max(diffInMinutes % 7 + 2, 2), 8);
 };
 
@@ -27,36 +26,72 @@ const shuffleArray = (array: any[]) => {
   return array;
 };
 
-const diversifyArticles = (articles: RSSArticle[]): RSSArticle[] => {
+const getCategoryFromSource = (source: string): string => {
+  const categoryMap: Record<string, string> = {
+    theverge: 'tech',
+    techcrunch: 'tech',
+    wired: 'tech',
+    reuters: 'world',
+    ap: 'world',
+    bbc: 'world',
+    guardian: 'world',
+    nytimes: 'world',
+    wsj: 'world',
+    bloomberg: 'business',
+    forbes: 'business',
+    economist: 'business',
+    nature: 'science',
+    newscientist: 'science',
+    scientific: 'science',
+    variety: 'entertainment',
+    hollywood: 'entertainment',
+    rollingstone: 'entertainment',
+    espn: 'sports',
+    sports_illustrated: 'sports'
+  };
+  return categoryMap[source] || 'general';
+};
+
+const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
+  // Filter articles by selected category if not "all"
+  const filteredArticles = selectedCategory === 'all' 
+    ? articles 
+    : articles.filter(article => getCategoryFromSource(article.category) === selectedCategory);
+
   // Group articles by category
-  const articlesByCategory = articles.reduce((acc, article) => {
-    if (!acc[article.category]) {
-      acc[article.category] = [];
+  const articlesByCategory = filteredArticles.reduce((acc, article) => {
+    const category = article.category;
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[article.category].push(article);
+    acc[category].push(article);
     return acc;
   }, {} as Record<string, RSSArticle[]>);
 
   // Take up to 3 most recent articles from each category
   const diversifiedArticles: RSSArticle[] = [];
   Object.values(articlesByCategory).forEach(categoryArticles => {
-    // Sort by date and take up to 3
     const recentCategoryArticles = categoryArticles
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
     diversifiedArticles.push(...recentCategoryArticles);
   });
 
-  // Shuffle the articles to mix categories
   return shuffleArray(diversifiedArticles);
 };
 
 const Index = () => {
   const { data: articles, isLoading, error } = useRSSFeed();
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Diversify articles before pagination
-  const diversifiedArticles = diversifyArticles(articles || []);
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page when changing categories
+  };
+
+  // Diversify and filter articles before pagination
+  const diversifiedArticles = diversifyArticles(articles || [], selectedCategory);
   const totalPages = Math.ceil(diversifiedArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = diversifiedArticles.slice(
     (currentPage - 1) * ARTICLES_PER_PAGE,
@@ -65,7 +100,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-paper-light flex flex-col">
-      <Header />
+      <Header onCategoryChange={handleCategoryChange} activeCategory={selectedCategory} />
       <main className="container mx-auto px-4 py-8 flex-1">
         {isLoading ? (
           <LoadingSkeleton />
@@ -77,16 +112,18 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg p-6 shadow-sm">
-                <ArticleList 
-                  articles={paginatedArticles}
-                  calculateReadingTime={calculateReadingTime}
-                />
-                <div className="mt-6">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
+                <div className="animate-fade-in">
+                  <ArticleList 
+                    articles={paginatedArticles}
+                    calculateReadingTime={calculateReadingTime}
                   />
+                  <div className="mt-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
