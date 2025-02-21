@@ -1,4 +1,3 @@
-
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
@@ -196,8 +195,6 @@ const Index = () => {
             <aside className="lg:col-span-1">
               <div className="sticky top-4 bg-white rounded-lg p-6 shadow-sm">
                 <SearchSidebar 
-                  articles={articles || []}
-                  onArticleClick={handleArticleClick}
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
                 />
