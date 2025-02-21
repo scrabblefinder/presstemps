@@ -1,5 +1,3 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { useState } from "react";
 import { RSSArticle } from "@/utils/rssUtils";
@@ -147,14 +145,12 @@ const Index = () => {
     window.open(article.url, '_blank', 'noopener,noreferrer');
   };
 
-  // First filter articles by search query
   const searchFilteredArticles = (articles || []).filter(article => {
     if (!searchQuery) return true;
     const searchContent = `${article.title} ${article.excerpt}`.toLowerCase();
     return searchContent.includes(searchQuery.toLowerCase());
   });
 
-  // Then diversify the filtered articles
   const diversifiedArticles = diversifyArticles(searchFilteredArticles, selectedCategory);
   const totalPages = Math.ceil(diversifiedArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = diversifiedArticles.slice(
@@ -163,48 +159,44 @@ const Index = () => {
   );
 
   return (
-    <div className="min-h-screen bg-paper-light flex flex-col">
-      <Header onCategoryChange={handleCategoryChange} activeCategory={selectedCategory} />
-      <main className="container mx-auto px-4 py-8 flex-1">
-        {isLoading ? (
-          <LoadingSkeleton />
-        ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-ink-light">Failed to load articles. Please try again later.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="animate-fade-in">
-                  <ArticleList 
-                    articles={paginatedArticles}
-                    calculateReadingTime={calculateReadingTime}
+    <main className="container mx-auto px-4 py-8 flex-1">
+      {isLoading ? (
+        <LoadingSkeleton />
+      ) : error ? (
+        <div className="text-center py-12">
+          <p className="text-ink-light">Failed to load articles. Please try again later.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="animate-fade-in">
+                <ArticleList 
+                  articles={paginatedArticles}
+                  calculateReadingTime={calculateReadingTime}
+                />
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
                   />
-                  <div className="mt-6">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={setCurrentPage}
-                    />
-                  </div>
                 </div>
               </div>
             </div>
-
-            <aside className="lg:col-span-1">
-              <div className="sticky top-4 bg-white rounded-lg p-6 shadow-sm">
-                <SearchSidebar 
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                />
-              </div>
-            </aside>
           </div>
-        )}
-      </main>
-      <Footer />
-    </div>
+
+          <aside className="lg:col-span-1">
+            <div className="sticky top-4 bg-white rounded-lg p-6 shadow-sm">
+              <SearchSidebar 
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
+            </div>
+          </aside>
+        </div>
+      )}
+    </main>
   );
 };
 
