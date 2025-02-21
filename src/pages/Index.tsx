@@ -58,25 +58,26 @@ const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RS
     ? articles 
     : articles.filter(article => getCategoryFromSource(article.category) === selectedCategory);
 
-  // Group articles by category
-  const articlesByCategory = filteredArticles.reduce((acc, article) => {
-    const category = article.category;
-    if (!acc[category]) {
-      acc[category] = [];
+  // Group articles by source within the selected category
+  const articlesBySource = filteredArticles.reduce((acc, article) => {
+    const source = article.category;
+    if (!acc[source]) {
+      acc[source] = [];
     }
-    acc[category].push(article);
+    acc[source].push(article);
     return acc;
   }, {} as Record<string, RSSArticle[]>);
 
-  // Take up to 3 most recent articles from each category
+  // Take up to 3 most recent articles from each source
   const diversifiedArticles: RSSArticle[] = [];
-  Object.values(articlesByCategory).forEach(categoryArticles => {
-    const recentCategoryArticles = categoryArticles
+  Object.values(articlesBySource).forEach(sourceArticles => {
+    const recentSourceArticles = sourceArticles
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
-    diversifiedArticles.push(...recentCategoryArticles);
+    diversifiedArticles.push(...recentSourceArticles);
   });
 
+  // Final shuffle to mix articles from different sources
   return shuffleArray(diversifiedArticles);
 };
 
@@ -90,7 +91,7 @@ const Index = () => {
     setCurrentPage(1); // Reset to first page when changing categories
   };
 
-  // Diversify and filter articles before pagination
+  // First diversify and filter articles
   const diversifiedArticles = diversifyArticles(articles || [], selectedCategory);
   const totalPages = Math.ceil(diversifiedArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = diversifiedArticles.slice(
