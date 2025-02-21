@@ -1,7 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.6';
 import { XMLParser } from 'https://esm.sh/fast-xml-parser@4.3.4';
-import { RSS_FEEDS } from '../shared/rssFeeds.ts';
 import { findArticleImage, cleanDescription, decodeHTMLEntities } from '../shared/utils.ts';
 
 const corsHeaders = {
@@ -16,35 +15,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceRole);
 async function updateFeed(categorySlug: string) {
   console.log(`Starting RSS feed update for category: ${categorySlug}`);
   
-  const url = RSS_FEEDS[categorySlug];
-  if (!url) {
-    throw new Error(`No RSS feed URL found for category: ${categorySlug}`);
-  }
-
   try {
-    console.log(`Fetching ${categorySlug} from ${url}`);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
-    const data = await response.text();
-    const parser = new XMLParser({
-      ignoreAttributes: false,
-      attributeNamePrefix: "@_",
-      parseAttributeValue: true,
-      trimValues: true,
-      parseTagValue: false,
-    });
-
-    const feed = parser.parse(data);
-    const channel = feed?.rss?.channel || feed?.feed || feed;
-    if (!channel) {
-      throw new Error('Invalid feed structure');
-    }
-
-    const items = channel.item || channel.entry || [];
-    const itemArray = Array.isArray(items) ? items : [items];
-    
-    // Get category id
+    // First get category ID and feeds
     const { data: categoryData, error: categoryError } = await supabase
       .from('categories')
       .select('id')
@@ -55,62 +27,102 @@ async function updateFeed(categorySlug: string) {
       throw new Error(`Category ${categorySlug} not found`);
     }
 
-    console.log(`Found ${itemArray.length} items in feed`);
+    // Get all feeds for this category
+    const { data: feeds, error: feedsError } = await supabase
+      .from('feeds')
+      .select('*')
+      .eq('category_id', categoryData.id);
+
+    if (feedsError) throw feedsError;
+    if (!feeds || feeds.length === 0) {
+      throw new Error(`No feeds found for category: ${categorySlug}`);
+    }
+
+    console.log(`Found ${feeds.length} feeds for category ${categorySlug}`);
     let processedCount = 0;
 
-    // Process articles
-    for (const item of itemArray.slice(0, 10)) {
-      const image = findArticleImage(item);
-      if (!image) {
-        console.log('Skipping article - no image found');
-        continue;
-      }
-
-      const title = decodeHTMLEntities(
-        typeof item.title === 'string' ? item.title : item.title?.['#text'] || ''
-      );
-      
-      const content = decodeHTMLEntities(
-        typeof item.description === 'string' ? item.description : item.description?.['#text'] || ''
-      );
-
-      const originalUrl = item.link || item.guid || '';
-      
-      if (!originalUrl || !title) {
-        console.log(`Skipping article "${title}" due to missing URL or title`);
-        continue;
-      }
-
-      // Create URL-friendly slug
-      const slug = `${categorySlug}-${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`;
-
-      const article = {
-        slug,
-        title,
-        content,
-        excerpt: cleanDescription(content),
-        image_url: image,
-        original_image_url: image,
-        category_id: categoryData.id,
-        source: categorySlug,
-        author: item.author || item.creator || categorySlug,
-        published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
-        url: originalUrl
-      };
-
-      console.log(`Processing article: ${title}`);
-
-      // Upsert article
-      const { error } = await supabase
-        .from('articles')
-        .upsert(article, {
-          onConflict: 'slug'
+    // Process each feed
+    for (const feed of feeds) {
+      try {
+        console.log(`Fetching ${feed.name} from ${feed.url}`);
+        const response = await fetch(feed.url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.text();
+        const parser = new XMLParser({
+          ignoreAttributes: false,
+          attributeNamePrefix: "@_",
+          parseAttributeValue: true,
+          trimValues: true,
+          parseTagValue: false,
         });
 
-      if (error) {
-        console.error(`Error upserting article: ${error.message}`);
-      } else {
-        processedCount++;
+        const parsedFeed = parser.parse(data);
+        const channel = parsedFeed?.rss?.channel || parsedFeed?.feed || parsedFeed;
+        if (!channel) {
+          throw new Error('Invalid feed structure');
+        }
+
+        const items = channel.item || channel.entry || [];
+        const itemArray = Array.isArray(items) ? items : [items];
+        
+        console.log(`Found ${itemArray.length} items in feed ${feed.name}`);
+
+        // Process articles
+        for (const item of itemArray.slice(0, 10)) {
+          const image = findArticleImage(item);
+          if (!image) {
+            console.log('Skipping article - no image found');
+            continue;
+          }
+
+          const title = decodeHTMLEntities(
+            typeof item.title === 'string' ? item.title : item.title?.['#text'] || ''
+          );
+          
+          const description = decodeHTMLEntities(
+            typeof item.description === 'string' ? item.description : item.description?.['#text'] || ''
+          );
+
+          const url = item.link || item.guid || '';
+          
+          if (!url || !title) {
+            console.log(`Skipping article "${title}" due to missing URL or title`);
+            continue;
+          }
+
+          // Create URL-friendly slug
+          const slug = `${categorySlug}-${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`;
+
+          const article = {
+            slug,
+            title,
+            content: description,
+            excerpt: cleanDescription(description),
+            image_url: image,
+            original_image_url: image,
+            category_id: categoryData.id,
+            source: feed.name,
+            author: item.author || item.creator || feed.name,
+            published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
+            url
+          };
+
+          // Upsert article
+          const { error: upsertError } = await supabase
+            .from('articles')
+            .upsert(article, {
+              onConflict: 'slug'
+            });
+
+          if (upsertError) {
+            console.error(`Error upserting article: ${upsertError.message}`);
+          } else {
+            processedCount++;
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing feed ${feed.name}: ${error}`);
       }
     }
 
