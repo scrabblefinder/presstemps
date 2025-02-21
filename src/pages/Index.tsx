@@ -32,13 +32,20 @@ const getCategorySlug = (categoryId: number): string => {
 };
 
 const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
+  console.log('Diversifying articles with category:', selectedCategory);
+  console.log('Articles before filtering:', articles);
+  
   // First filter articles by selected category
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
     : articles.filter(article => {
+        console.log('Article category before filtering:', article.category);
         const categorySlug = getCategorySlug(parseInt(article.category));
+        console.log('Category slug:', categorySlug);
         return categorySlug === selectedCategory;
       });
+
+  console.log('Filtered articles:', filteredArticles);
 
   // Sort all articles by date
   return filteredArticles.sort((a, b) => 
@@ -55,9 +62,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleArticleClick = (article: RSSArticle) => {
-    window.open(article.url, '_blank', 'noopener,noreferrer');
-  };
+  console.log('Articles from useRSSFeed:', articles);
 
   const searchFilteredArticles = (articles || []).filter(article => {
     if (!searchQuery) return true;
@@ -71,6 +76,8 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
     (currentPage - 1) * ARTICLES_PER_PAGE,
     currentPage * ARTICLES_PER_PAGE
   );
+
+  console.log('Final paginated articles:', paginatedArticles);
 
   return (
     <main className="container mx-auto px-4 py-8 flex-1">
