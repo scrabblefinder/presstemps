@@ -48,10 +48,10 @@ const isScience = (title: string, excerpt: string): boolean => {
 
 const getCategoryFromSource = (source: string, article: RSSArticle): string => {
   const baseCategory = {
-    // Tech
-    theverge: 'tech',
-    techcrunch: 'tech',
-    wired: 'tech',
+    // Technology (changed from 'tech')
+    theverge: 'technology',
+    techcrunch: 'technology',
+    wired: 'technology',
     
     // World
     reuters: 'world',
@@ -79,7 +79,7 @@ const getCategoryFromSource = (source: string, article: RSSArticle): string => {
     // Sports
     espn: 'sports',
     sports_illustrated: 'sports'
-  }[source] || 'us'; // Changed default from 'general' to 'us'
+  }[source] || 'us';
 
   // For US news sources, check content to determine if it's really US news
   if (['politico', 'hill', 'npr', 'usatoday', 'foxnews'].includes(source)) {
