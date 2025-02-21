@@ -9,6 +9,7 @@ const categories = [
   { name: "Entertainment", slug: "4" },
   { name: "World News", slug: "5" },
   { name: "Politics", slug: "6" },
+  { name: "US", slug: "7" },
   { name: "Sports", slug: "8" },
   { name: "Lifestyle", slug: "10" }
 ];

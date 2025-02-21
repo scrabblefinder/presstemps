@@ -12,6 +12,7 @@ export const RSS_SOURCES = {
   guardian: 'The Guardian',
   nytimes: 'The New York Times',
   wsj: 'Wall Street Journal',
+  foxnews: 'Fox News',
   
   // Business & Finance
   bloomberg: 'Bloomberg',
@@ -48,6 +49,7 @@ export const DEFAULT_IMAGES = {
   guardian: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167',
   nytimes: 'https://images.unsplash.com/photo-1568306340504-8cd352daf827',
   wsj: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e',
+  foxnews: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9',
   bloomberg: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3',
   forbes: 'https://images.unsplash.com/photo-1604594849809-dfedbc827105',
   economist: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0',
