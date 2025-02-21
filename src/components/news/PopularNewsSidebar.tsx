@@ -26,7 +26,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
             <span className="text-2xl font-bold text-gray-300 group-hover:text-blue-500 transition-colors">
               {(index + 1).toString().padStart(2, '0')}
             </span>
-            <h3 className="text-sm text-ink-light group-hover:text-ink-dark transition-colors line-clamp-2">
+            <h3 className="text-sm text-ink-light group-hover:text-ink-dark group-hover:font-bold transition-all line-clamp-2">
               {article.title}
             </h3>
           </a>
@@ -34,4 +34,4 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
       </div>
     </div>
   );
-};
+}
