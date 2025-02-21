@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 
 const categories = [
   { name: "All", slug: "all" },
-  { name: "Technology", slug: "1" },
-  { name: "Science", slug: "2" },
-  { name: "Business", slug: "3" },
-  { name: "Entertainment", slug: "4" },
-  { name: "World News", slug: "5" },
   { name: "Politics", slug: "6" },
   { name: "US", slug: "7" },
+  { name: "World News", slug: "5" },
   { name: "Sports", slug: "8" },
+  { name: "Business", slug: "3" },
+  { name: "Technology", slug: "1" },
+  { name: "Entertainment", slug: "4" },
+  { name: "Science", slug: "2" },
   { name: "Lifestyle", slug: "10" }
 ];
 
