@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 
 const categories = [
   { name: "All", slug: "all" },
-  { name: "US", slug: "us" },
-  { name: "Technology", slug: "technology" },
-  { name: "World", slug: "world" },
-  { name: "Business", slug: "business" },
-  { name: "Science", slug: "science" },
-  { name: "Entertainment", slug: "entertainment" },
-  { name: "Sports", slug: "sports" }
+  { name: "Technology", slug: "1" },
+  { name: "Science", slug: "2" },
+  { name: "Business", slug: "3" },
+  { name: "Entertainment", slug: "4" },
+  { name: "World News", slug: "5" },
+  { name: "Politics", slug: "6" },
+  { name: "Sports", slug: "8" },
+  { name: "Lifestyle", slug: "10" }
 ];
 
 interface HeaderProps {
