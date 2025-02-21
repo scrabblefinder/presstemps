@@ -29,7 +29,7 @@ export function Header({ onCategoryChange, activeCategory, session }: HeaderProp
     <header className="bg-white">
       <div className="container mx-auto px-4 flex justify-between items-center h-16">
         <Link to="/" className="text-2xl font-bold text-ink-light">
-          News App
+          PressTemps
         </Link>
         
         {session ? (
