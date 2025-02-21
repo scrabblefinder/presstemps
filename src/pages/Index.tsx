@@ -28,7 +28,9 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
 
   // Filter articles based on category and search query
   const filteredArticles = (allArticles || []).filter(article => {
-    const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || 
+      (article.categories && article.categories.slug === selectedCategory);
+    
     if (!matchesCategory) return false;
 
     if (!searchQuery) return true;
@@ -95,3 +97,4 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
 };
 
 export default Index;
+
