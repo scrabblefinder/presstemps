@@ -41,9 +41,14 @@ const RSS_SOURCES = {
   hollywood: 'Hollywood Reporter',
   rollingstone: 'Rolling Stone',
   
-  // Sports
+  // Sports - Updated with new sources
   espn: 'ESPN',
-  sports_illustrated: 'Sports Illustrated'
+  sports_illustrated: 'Sports Illustrated',
+  cbssports: 'CBS Sports',
+  yahoosports: 'Yahoo Sports',
+  bleacherreport: 'Bleacher Report',
+  nbcsports: 'NBC Sports',
+  skysports: 'Sky Sports'
 };
 
 const getDefaultImage = (category: string) => {
@@ -66,8 +71,14 @@ const getDefaultImage = (category: string) => {
     variety: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0',
     hollywood: 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf',
     rollingstone: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4',
+    // Updated sports default images
     espn: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211',
-    sports_illustrated: 'https://images.unsplash.com/photo-1579010175856-cb43ccf1afb7'
+    sports_illustrated: 'https://images.unsplash.com/photo-1579010175856-cb43ccf1afb7',
+    cbssports: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff',
+    yahoosports: 'https://images.unsplash.com/photo-1583739654245-8c7f99b0c073',
+    bleacherreport: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
+    nbcsports: 'https://images.unsplash.com/photo-1579403124614-197f69d8187b',
+    skysports: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2'
   };
   return defaultImages[category as keyof typeof defaultImages] || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167';
 };

@@ -39,9 +39,14 @@ const RSS_FEEDS = {
   hollywood: 'https://www.hollywoodreporter.com/feed/',
   rollingstone: 'https://www.rollingstone.com/feed/',
   
-  // Sports
+  // Sports - Updated with more sources
   espn: 'https://www.espn.com/espn/rss/news',
-  sports_illustrated: 'https://www.si.com/rss/si_top_stories.rss'
+  sports_illustrated: 'https://www.si.com/rss/si_top_stories.rss',
+  cbssports: 'https://www.cbssports.com/rss/headlines/',
+  yahoosports: 'https://sports.yahoo.com/rss/',
+  bleacherreport: 'https://bleacherreport.com/articles/feed',
+  nbcsports: 'https://www.nbcsports.com/rss/news',
+  skysports: 'https://www.skysports.com/rss/12040' // Premier League news feed
 };
 
 export const useRSSFeed = (category?: string) => {
