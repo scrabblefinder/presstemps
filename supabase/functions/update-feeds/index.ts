@@ -1,24 +1,29 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.6';
 import { XMLParser } from 'https://esm.sh/fast-xml-parser@4.3.4';
-import { RSS_FEEDS } from '../shared/rssFeeds.ts';
-import { findArticleImage, cleanDescription, decodeHTMLEntities } from '../shared/utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseServiceRole = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseServiceRole);
+const RSS_FEEDS = {
+  'reuters': 'https://www.rss-url.com/feed.xml',  // We'll add more feeds here
+  'ap': 'https://www.ap.org/feed.xml',
+  'bbc': 'https://feeds.bbci.co.uk/news/rss.xml',
+};
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
 async function updateFeeds() {
   console.log('Starting RSS feed updates...');
   
-  for (const [categorySlug, url] of Object.entries(RSS_FEEDS)) {
+  for (const [source, url] of Object.entries(RSS_FEEDS)) {
     try {
-      console.log(`Fetching ${categorySlug} from ${url}`);
+      console.log(`Fetching ${source} from ${url}`);
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
@@ -38,57 +43,43 @@ async function updateFeeds() {
       const items = channel.item || channel.entry || [];
       const itemArray = Array.isArray(items) ? items : [items];
       
-      // Get category id
+      // Get category id for this source
       const { data: categoryData } = await supabase
         .from('categories')
         .select('id')
-        .eq('slug', categorySlug)
+        .eq('slug', source)
         .single();
         
       if (!categoryData) {
-        console.error(`Category ${categorySlug} not found`);
+        console.error(`Category ${source} not found`);
         continue;
       }
 
       // Process articles
       for (const item of itemArray.slice(0, 10)) {
-        const image = findArticleImage(item);
-        if (!image) continue;
-
-        const title = decodeHTMLEntities(
-          typeof item.title === 'string' ? item.title : item.title?.['#text'] || ''
-        );
+        const title = typeof item.title === 'string' ? item.title : item.title?.['#text'] || '';
+        const content = typeof item.description === 'string' ? item.description : item.description?.['#text'] || '';
+        const url = item.link || item.guid || '';
         
-        const content = decodeHTMLEntities(
-          typeof item.description === 'string' ? item.description : item.description?.['#text'] || ''
-        );
-
-        const originalUrl = item.link || item.guid || '';
-        console.log(`Original URL for "${title}": ${originalUrl}`); // Debug log
-        
-        if (!originalUrl || !title) {
+        if (!url || !title) {
           console.log(`Skipping article "${title}" due to missing URL or title`);
           continue;
         }
 
-        // Create URL-friendly slug
-        const slug = `${categorySlug}-${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`;
+        const slug = `${source}-${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`;
 
         const article = {
           slug,
           title,
           content,
-          excerpt: cleanDescription(content),
-          image_url: image,
-          original_image_url: image,
+          excerpt: content.slice(0, 200) + '...',
+          image_url: 'https://picsum.photos/800/400', // Placeholder image
           category_id: categoryData.id,
-          source: categorySlug,
-          author: item.author || item.creator || categorySlug,
+          source,
+          author: item.author || item.creator || source,
           published_at: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
-          url: originalUrl // Ensure we're storing the original URL
+          url
         };
-
-        console.log(`Upserting article:`, article); // Debug log
 
         // Upsert article
         const { error } = await supabase
@@ -102,7 +93,7 @@ async function updateFeeds() {
         }
       }
     } catch (error) {
-      console.error(`Error processing ${categorySlug}: ${error}`);
+      console.error(`Error processing ${source}: ${error}`);
     }
   }
 }
