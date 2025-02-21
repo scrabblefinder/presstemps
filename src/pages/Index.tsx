@@ -26,15 +26,30 @@ const shuffleArray = (array: any[]) => {
   return array;
 };
 
-const getCategoryFromSource = (source: string): string => {
-  const categoryMap: Record<string, string> = {
-    // US News
-    politico: 'us',
-    hill: 'us',
-    npr: 'us',
-    usatoday: 'us',
-    foxnews: 'us',
-    
+const isUSNews = (title: string, excerpt: string): boolean => {
+  const usKeywords = [
+    'congress', 'senate', 'house', 'biden', 'trump', 'washington',
+    'america', 'american', 'u.s.', 'united states', 'federal',
+    'democrat', 'republican', 'gop', 'white house'
+  ];
+  
+  const content = (title + ' ' + excerpt).toLowerCase();
+  return usKeywords.some(keyword => content.includes(keyword.toLowerCase()));
+};
+
+const isScience = (title: string, excerpt: string): boolean => {
+  const scienceKeywords = [
+    'research', 'study', 'science', 'scientist', 'discovery',
+    'space', 'physics', 'chemistry', 'biology', 'medicine',
+    'technology', 'innovation', 'experiment', 'laboratory'
+  ];
+  
+  const content = (title + ' ' + excerpt).toLowerCase();
+  return scienceKeywords.some(keyword => content.includes(keyword.toLowerCase()));
+};
+
+const getCategoryFromSource = (source: string, article: RSSArticle): string => {
+  const baseCategory = {
     // Tech
     theverge: 'tech',
     techcrunch: 'tech',
@@ -66,15 +81,28 @@ const getCategoryFromSource = (source: string): string => {
     // Sports
     espn: 'sports',
     sports_illustrated: 'sports'
-  };
-  return categoryMap[source] || 'general';
+  }[source] || 'general';
+
+  // For US news sources, check content to determine if it's really US news
+  if (['politico', 'hill', 'npr', 'usatoday', 'foxnews'].includes(source)) {
+    if (isUSNews(article.title, article.excerpt)) {
+      return 'us';
+    }
+    if (isScience(article.title, article.excerpt)) {
+      return 'science';
+    }
+    // For these sources, if not clearly US or Science, default to US
+    return 'us';
+  }
+
+  return baseCategory;
 };
 
 const diversifyArticles = (articles: RSSArticle[], selectedCategory: string): RSSArticle[] => {
   // First filter articles by selected category
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
-    : articles.filter(article => getCategoryFromSource(article.category) === selectedCategory);
+    : articles.filter(article => getCategoryFromSource(article.category, article) === selectedCategory);
 
   // Group articles by source within the filtered category
   const articlesBySource = filteredArticles.reduce((acc, article) => {
