@@ -1,7 +1,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.6';
-import { XMLParser } from 'https://esm.sh/fast-xml-parser@4.3.4';
-import { findArticleImage, cleanDescription, decodeHTMLEntities } from '../shared/utils.ts';
+import { fetchRSSFeeds } from '../shared/utils.ts';
+import { RSS_SOURCES } from '../shared/rssFeeds.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,131 +12,58 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
 const supabaseServiceRole = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const supabase = createClient(supabaseUrl, supabaseServiceRole);
 
-async function updateFeed(categorySlug: string) {
-  console.log(`Starting RSS feed update for category: ${categorySlug}`);
-  
+async function processCategory(categorySlug: string, categoryId: number) {
+  console.log(`Processing category: ${categorySlug}`);
   try {
-    // First get category ID and feeds
-    const { data: categoryData, error: categoryError } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('slug', categorySlug)
-      .single();
-      
-    if (categoryError || !categoryData) {
-      throw new Error(`Category ${categorySlug} not found`);
+    const sourceUrl = RSS_SOURCES[categorySlug];
+    if (!sourceUrl) {
+      console.error(`No RSS source found for category: ${categorySlug}`);
+      return [];
     }
 
-    // Get all feeds for this category
-    const { data: feeds, error: feedsError } = await supabase
-      .from('feeds')
-      .select('*')
-      .eq('category_id', categoryData.id);
+    const articles = await fetchRSSFeeds(sourceUrl, categorySlug);
+    console.log(`Fetched ${articles.length} articles for ${categorySlug}`);
 
-    if (feedsError) throw feedsError;
-    if (!feeds || feeds.length === 0) {
-      throw new Error(`No feeds found for category: ${categorySlug}`);
-    }
+    for (const article of articles) {
+      if (!article.title || !article.url) {
+        console.log('Skipping article due to missing title or URL');
+        continue;
+      }
 
-    console.log(`Found ${feeds.length} feeds for category ${categorySlug}`);
-    let processedCount = 0;
+      const slug = `${categorySlug}-${encodeURIComponent(
+        article.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      )}`;
 
-    // Process each feed
-    for (const feed of feeds) {
-      try {
-        console.log(`Fetching ${feed.name} from ${feed.url}`);
-        const response = await fetch(feed.url);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const data = await response.text();
-        const parser = new XMLParser({
-          ignoreAttributes: false,
-          attributeNamePrefix: "@_",
-          parseAttributeValue: true,
-          trimValues: true,
-          parseTagValue: false,
+      const { error: upsertError } = await supabase
+        .from('articles')
+        .upsert({
+          slug,
+          title: article.title,
+          content: article.excerpt,
+          excerpt: article.excerpt.substring(0, 300) + '...',
+          image_url: article.image,
+          original_image_url: article.image,
+          category_id: categoryId,
+          source: article.source,
+          author: article.author,
+          published_at: article.date,
+          url: article.url
+        }, {
+          onConflict: 'slug',
+          ignoreDuplicates: false
         });
 
-        const parsedFeed = parser.parse(data);
-        const channel = parsedFeed?.rss?.channel || parsedFeed?.feed || parsedFeed;
-        if (!channel) {
-          throw new Error('Invalid feed structure');
-        }
-
-        const items = channel.item || channel.entry || [];
-        const itemArray = Array.isArray(items) ? items : [items];
-        
-        console.log(`Found ${itemArray.length} items in feed ${feed.name}`);
-
-        // Process articles
-        for (const item of itemArray.slice(0, 10)) {
-          const image = findArticleImage(item);
-          if (!image) {
-            console.log('Skipping article - no image found');
-            continue;
-          }
-
-          const title = decodeHTMLEntities(
-            typeof item.title === 'string' ? item.title : item.title?.['#text'] || ''
-          );
-          
-          const description = decodeHTMLEntities(
-            typeof item.description === 'string' ? item.description : item.description?.['#text'] || ''
-          );
-
-          const url = item.link || item.guid || '';
-          const published = new Date(item.pubDate || item.published || item['dc:date'] || '');
-          
-          if (!url || !title) {
-            console.log(`Skipping article "${title}" due to missing URL or title`);
-            continue;
-          }
-
-          // Create URL-friendly slug
-          const slug = `${categorySlug}-${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`;
-
-          const article = {
-            slug,
-            title,
-            content: description,
-            excerpt: cleanDescription(description).substring(0, 300) + '...',
-            image_url: image,
-            original_image_url: image,
-            category_id: categoryData.id,
-            source: feed.name,
-            author: item.author || item.creator || feed.name,
-            published_at: published.toISOString(),
-            url
-          };
-
-          console.log('Attempting to save article:', { title, slug, category: categorySlug });
-
-          // Upsert article
-          const { error: upsertError } = await supabase
-            .from('articles')
-            .upsert(article, {
-              onConflict: 'slug',
-              ignoreDuplicates: false
-            });
-
-          if (upsertError) {
-            console.error(`Error upserting article: ${upsertError.message}`);
-          } else {
-            processedCount++;
-            console.log(`Successfully saved article: ${title}`);
-          }
-        }
-      } catch (error) {
-        console.error(`Error processing feed ${feed.name}: ${error}`);
+      if (upsertError) {
+        console.error(`Error upserting article ${slug}:`, upsertError);
+      } else {
+        console.log(`Successfully saved/updated article: ${slug}`);
       }
     }
 
-    console.log(`Successfully processed ${processedCount} articles for ${categorySlug}`);
-    return processedCount;
-
+    return articles;
   } catch (error) {
-    console.error(`Error processing ${categorySlug}: ${error}`);
-    throw error;
+    console.error(`Error processing category ${categorySlug}:`, error);
+    return [];
   }
 }
 
@@ -146,31 +73,45 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Parse the request body to get the category
-    const { category } = await req.json();
+    console.log('Starting RSS feed update process');
     
-    if (!category) {
-      throw new Error('Category is required');
+    // Get all categories
+    const { data: categories, error: categoriesError } = await supabase
+      .from('categories')
+      .select('*');
+
+    if (categoriesError) {
+      throw categoriesError;
     }
 
-    console.log(`Received request to update category: ${category}`);
-    const processedCount = await updateFeed(category);
+    console.log(`Found ${categories.length} categories to process`);
+
+    // Process each category
+    const results = await Promise.all(
+      categories.map(category => 
+        processCategory(category.slug, category.id)
+      )
+    );
+
+    const totalArticles = results.reduce((sum, articles) => sum + articles.length, 0);
+    console.log(`Update complete. Processed ${totalArticles} articles across ${categories.length} categories`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Successfully processed ${processedCount} articles for ${category}` 
+        message: `Successfully processed ${totalArticles} articles` 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
+
   } catch (error) {
-    console.error('Error in edge function:', error);
+    console.error('Error in update-feeds function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        success: false
+        success: false, 
+        error: error.message 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
