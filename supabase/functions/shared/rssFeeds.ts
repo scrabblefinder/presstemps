@@ -1,28 +1,14 @@
 
-export const RSS_FEEDS: { [key: string]: string } = {
-  theverge: 'https://www.theverge.com/rss/index.xml',
-  techcrunch: 'https://techcrunch.com/feed/',
-  wired: 'https://www.wired.com/feed/rss',
-  reuters: 'https://feeds.reuters.com/reuters/topNews',
-  ap: 'https://feeds.feedburner.com/BreakingDefense',
-  bbc: 'http://feeds.bbci.co.uk/news/rss.xml',
-  guardian: 'https://www.theguardian.com/uk/rss',
-  nytimes: 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
-  wsj: 'https://feeds.a.dj.com/rss/RSSWorldNews.xml',
-  bloomberg: 'https://feeds.bloomberg.com/markets/news.rss',
-  forbes: 'https://www.forbes.com/innovation/feed/',
-  economist: 'https://www.economist.com/business/rss.xml',
-  nature: 'https://www.nature.com/nature.rss',
-  newscientist: 'https://www.newscientist.com/feed/home/',
-  scientific: 'https://rss.sciencedirect.com/publication/science/latest',
-  variety: 'https://variety.com/feed/',
-  hollywood: 'https://www.hollywoodreporter.com/feed/',
-  rollingstone: 'https://www.rollingstone.com/feed/',
-  espn: 'https://www.espn.com/espn/rss/news',
-  sports_illustrated: 'https://www.si.com/rss/si_top_stories.rss',
-  cbssports: 'https://www.cbssports.com/rss/headlines/',
-  yahoosports: 'https://sports.yahoo.com/rss/',
-  bleacherreport: 'https://bleacherreport.com/articles/feed',
-  nbcsports: 'https://profootballtalk.nbcsports.com/feed/',
-  skysports: 'https://www.skysports.com/rss/12040'
+export const RSS_SOURCES: { [key: string]: string } = {
+  "1": "https://techcrunch.com/feed/",
+  "2": "https://www.sciencedaily.com/rss/all.xml",
+  "3": "https://www.ft.com/rss/home",
+  "4": "https://variety.com/feed/",
+  "5": "https://www.aljazeera.com/xml/rss/all.xml",
+  "6": "https://www.politico.com/rss/politicopicks.xml",
+  "7": "https://moxie.foxnews.com/google-publisher/latest.xml",
+  "8": "https://feeds.bbci.co.uk/sport/rss.xml",
+  "9": "https://feeds.bbci.co.uk/news/world/rss.xml",
+  "10": "https://www.self.com/feed/rss"
 };
+

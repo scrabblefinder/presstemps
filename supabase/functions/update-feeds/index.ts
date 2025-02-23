@@ -15,14 +15,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceRole);
 async function processCategory(categorySlug: string, categoryId: number) {
   console.log(`Processing category: ${categorySlug}`);
   try {
-    const sourceUrl = RSS_SOURCES[categorySlug];
+    const sourceUrl = RSS_SOURCES[categoryId.toString()];
     if (!sourceUrl) {
-      console.error(`No RSS source found for category: ${categorySlug}`);
+      console.error(`No RSS source found for category ID: ${categoryId}`);
       return [];
     }
 
-    const articles = await fetchRSSFeeds(sourceUrl, categorySlug);
-    console.log(`Fetched ${articles.length} articles for ${categorySlug}`);
+    const articles = await fetchRSSFeeds(sourceUrl, categoryId.toString());
+    console.log(`Fetched ${articles.length} articles for category ${categoryId}`);
 
     for (const article of articles) {
       if (!article.title || !article.url) {
@@ -30,7 +30,7 @@ async function processCategory(categorySlug: string, categoryId: number) {
         continue;
       }
 
-      const slug = `${categorySlug}-${encodeURIComponent(
+      const slug = `${categoryId}-${encodeURIComponent(
         article.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
       )}`;
 
@@ -62,7 +62,7 @@ async function processCategory(categorySlug: string, categoryId: number) {
 
     return articles;
   } catch (error) {
-    console.error(`Error processing category ${categorySlug}:`, error);
+    console.error(`Error processing category ${categoryId}:`, error);
     return [];
   }
 }
