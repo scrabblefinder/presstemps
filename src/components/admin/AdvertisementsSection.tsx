@@ -75,6 +75,7 @@ export const AdvertisementsSection = () => {
       excerpt: '',
       image_url: '',
       source_text: '',
+      url: '', // Add this line to include url when resetting the form
     });
     loadAds();
   };
