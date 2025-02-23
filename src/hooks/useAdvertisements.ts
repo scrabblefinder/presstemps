@@ -25,7 +25,7 @@ export const useAdvertisements = () => {
         source: ad.source_text,
         date: ad.created_at,
         author: ad.source_text,
-        url: '#',
+        url: ad.url || '#',
         isAd: true
       }));
     },

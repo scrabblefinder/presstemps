@@ -19,6 +19,7 @@ export type Database = {
           source_text: string
           title: string
           updated_at: string | null
+          url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -29,6 +30,7 @@ export type Database = {
           source_text: string
           title: string
           updated_at?: string | null
+          url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -39,6 +41,7 @@ export type Database = {
           source_text?: string
           title?: string
           updated_at?: string | null
+          url?: string | null
         }
         Relationships: []
       }

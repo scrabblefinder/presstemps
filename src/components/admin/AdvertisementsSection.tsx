@@ -14,6 +14,7 @@ interface Advertisement {
   image_url: string;
   source_text: string;
   is_active: boolean;
+  url: string | null;
 }
 
 export const AdvertisementsSection = () => {
@@ -24,6 +25,7 @@ export const AdvertisementsSection = () => {
     excerpt: '',
     image_url: '',
     source_text: '',
+    url: '',
   });
 
   useEffect(() => {
@@ -173,6 +175,14 @@ export const AdvertisementsSection = () => {
         </div>
         <div className="space-y-2">
           <Input
+            placeholder="Advertisement URL"
+            value={newAd.url}
+            onChange={e => setNewAd(prev => ({ ...prev, url: e.target.value }))}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Input
             placeholder="Source Text (e.g., 'Sponsored by TechCorp')"
             value={newAd.source_text}
             onChange={e => setNewAd(prev => ({ ...prev, source_text: e.target.value }))}
@@ -213,6 +223,12 @@ export const AdvertisementsSection = () => {
                       placeholder="Source Text"
                     />
                   </div>
+                  <Input
+                    value={ad.url || ''}
+                    onChange={e => updateAd(ad.id, { url: e.target.value })}
+                    className="text-sm"
+                    placeholder="Advertisement URL"
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button
