@@ -30,9 +30,26 @@ function cleanDescription(html: string): string {
 }
 
 function findArticleImage(item: any): string | null {
+  // Special handling for BBC feeds
+  if (item['media:thumbnail']) {
+    const mediaThumbnail = Array.isArray(item['media:thumbnail']) 
+      ? item['media:thumbnail'][0] 
+      : item['media:thumbnail'];
+    
+    const url = mediaThumbnail?.["@_url"];
+    if (url) {
+      // BBC images come with size suffixes like '/240/', replace with larger size
+      return url.replace('/240/', '/800/');
+    }
+  }
+
   // Check for media:content
-  if (item['media:content'] && item['media:content']['@_url']) {
-    return item['media:content']['@_url'];
+  if (item['media:content']) {
+    const mediaContent = Array.isArray(item['media:content']) 
+      ? item['media:content'][0] 
+      : item['media:content'];
+    const url = mediaContent?.["@_url"];
+    if (url) return url;
   }
 
   // Check for enclosure
@@ -40,15 +57,22 @@ function findArticleImage(item: any): string | null {
     return item.enclosure['@_url'];
   }
 
-  // Check for image tag
+  // Check for image tag in item
   if (item.image && item.image.url) {
     return item.image.url;
   }
 
-  // Try to find first image in content
+  // Try to find first image in description
   const imgMatch = item.description?.match(/<img[^>]+src="([^">]+)"/);
-  if (imgMatch) {
+  if (imgMatch && imgMatch[1]) {
     return imgMatch[1];
+  }
+
+  // Additional check for content:encoded
+  const contentEncoded = item['content:encoded'] || '';
+  const contentImgMatch = contentEncoded.match(/<img[^>]+src="([^">]+)"/);
+  if (contentImgMatch && contentImgMatch[1]) {
+    return contentImgMatch[1];
   }
 
   return null;
@@ -106,6 +130,8 @@ export async function fetchRSSFeeds(url: string, categorySlug: string): Promise<
       if (!image || !image.match(/^https?:\/\//)) {
         console.log(`No valid image found for article in ${categorySlug}, using default`);
         image = getDefaultImage(categorySlug);
+      } else {
+        console.log(`Found image for article: ${image}`);
       }
 
       const title = decodeHTMLEntities(
