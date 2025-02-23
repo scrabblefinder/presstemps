@@ -10,7 +10,12 @@ interface ArticleListProps {
 
 export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: ArticleListProps) => {
   // Helper function to get category display name
-  const getCategoryDisplayName = (categoryId: string | number): string => {
+  const getCategoryDisplayName = (categoryId: string | number, isAd?: boolean): string => {
+    // If it's an advertisement, return "Ad"
+    if (isAd) {
+      return 'Ad';
+    }
+    
     console.log('Category ID received:', categoryId, 'Type:', typeof categoryId);
     
     // If categoryId is undefined or null, return Uncategorized
@@ -70,7 +75,7 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
               <div className="flex-1">
                 <div className="flex items-center gap-3 text-sm mb-2">
                   <span className="text-blue-600 font-medium">
-                    {getCategoryDisplayName(article.category)}
+                    {getCategoryDisplayName(article.category, article.isAd)}
                   </span>
                   <span className="text-ink-light">•</span>
                   <span className="text-ink-light">{article.source}</span>
