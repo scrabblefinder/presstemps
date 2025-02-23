@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Trash2 } from "lucide-react";
 
 interface Advertisement {
   id: number;
@@ -73,6 +74,29 @@ export const AdvertisementsSection = () => {
       image_url: '',
       source_text: '',
     });
+    loadAds();
+  };
+
+  const deleteAd = async (id: number) => {
+    const { error } = await supabase
+      .from('advertisements')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error deleting advertisement",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Advertisement deleted",
+      description: "The advertisement has been deleted successfully."
+    });
+
     loadAds();
   };
 
@@ -196,6 +220,14 @@ export const AdvertisementsSection = () => {
                     onClick={() => toggleAdStatus(ad.id, ad.is_active)}
                   >
                     {ad.is_active ? 'Deactivate' : 'Activate'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => deleteAd(ad.id)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
