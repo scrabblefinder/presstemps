@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,10 @@ export const AdvertisementsSection = () => {
     image_url: '',
     source_text: '',
   });
+
+  useEffect(() => {
+    loadAds();
+  }, []);
 
   const loadAds = async () => {
     const { data, error } = await supabase
@@ -90,6 +94,29 @@ export const AdvertisementsSection = () => {
     loadAds();
   };
 
+  const updateAd = async (id: number, updatedData: Partial<Advertisement>) => {
+    const { error } = await supabase
+      .from('advertisements')
+      .update(updatedData)
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error updating advertisement",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Advertisement updated",
+      description: "The advertisement has been updated successfully."
+    });
+
+    loadAds();
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Advertisements</h2>
@@ -132,20 +159,51 @@ export const AdvertisementsSection = () => {
       </form>
 
       <div className="space-y-4">
+        <h3 className="text-lg font-semibold">All Advertisements</h3>
         {ads.map(ad => (
-          <div key={ad.id} className="bg-white p-4 rounded-lg shadow-sm">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold">{ad.title}</h3>
-                <p className="text-sm text-gray-600">{ad.excerpt}</p>
-                <p className="text-sm text-gray-500 mt-2">Source: {ad.source_text}</p>
+          <div key={ad.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="space-y-2 flex-1 mr-4">
+                  <Input
+                    value={ad.title}
+                    onChange={e => updateAd(ad.id, { title: e.target.value })}
+                    className="font-semibold"
+                  />
+                  <Textarea
+                    value={ad.excerpt || ''}
+                    onChange={e => updateAd(ad.id, { excerpt: e.target.value })}
+                    className="text-sm text-gray-600"
+                  />
+                  <div className="flex gap-4">
+                    <Input
+                      value={ad.image_url}
+                      onChange={e => updateAd(ad.id, { image_url: e.target.value })}
+                      className="text-sm"
+                      placeholder="Image URL"
+                    />
+                    <Input
+                      value={ad.source_text}
+                      onChange={e => updateAd(ad.id, { source_text: e.target.value })}
+                      className="text-sm"
+                      placeholder="Source Text"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant={ad.is_active ? "destructive" : "default"}
+                    onClick={() => toggleAdStatus(ad.id, ad.is_active)}
+                  >
+                    {ad.is_active ? 'Deactivate' : 'Activate'}
+                  </Button>
+                </div>
               </div>
-              <Button
-                variant={ad.is_active ? "destructive" : "default"}
-                onClick={() => toggleAdStatus(ad.id, ad.is_active)}
-              >
-                {ad.is_active ? 'Deactivate' : 'Activate'}
-              </Button>
+              {ad.is_active && (
+                <div className="text-sm text-green-600 font-medium">
+                  Currently Active
+                </div>
+              )}
             </div>
           </div>
         ))}
