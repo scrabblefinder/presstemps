@@ -1,4 +1,3 @@
-
 import { XMLParser } from 'https://esm.sh/fast-xml-parser@4.3.4';
 
 export interface RSSArticle {
@@ -95,6 +94,19 @@ function getDefaultImage(category: string): string {
   return defaultImages[category] || defaultImages["1"];
 }
 
+const SOURCE_NAMES: { [key: string]: string } = {
+  "1": "TechCrunch",
+  "2": "Science Daily",
+  "3": "Financial Times",
+  "4": "Variety",
+  "5": "Al Jazeera",
+  "6": "Politico",
+  "7": "Fox News",
+  "8": "BBC Sport",
+  "9": "BBC News",
+  "10": "Self"
+};
+
 export async function fetchRSSFeeds(url: string, categorySlug: string): Promise<RSSArticle[]> {
   try {
     console.log(`Fetching RSS feed for ${categorySlug}:`, url);
@@ -147,9 +159,9 @@ export async function fetchRSSFeeds(url: string, categorySlug: string): Promise<
         excerpt: cleanDescription(description),
         image,
         category: categorySlug,
-        source: channel.title || categorySlug,
+        source: SOURCE_NAMES[categorySlug] || 'Unknown Source',
         date: new Date(item.pubDate || item.published || item['dc:date'] || '').toISOString(),
-        author: item.author || item.creator || channel.title || 'Unknown',
+        author: item.author || item.creator || SOURCE_NAMES[categorySlug] || 'Unknown',
         url: item.link || item.guid || '',
       };
     }).filter(item => item.title && item.url);
