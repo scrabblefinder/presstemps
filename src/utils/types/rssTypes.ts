@@ -8,8 +8,5 @@ export interface RSSArticle {
   date: string;
   author: string;
   url: string;
-}
-
-export interface RSSSource {
-  [key: string]: string;
+  isAd?: boolean;
 }

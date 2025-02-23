@@ -1,10 +1,10 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Article } from '@/utils/dbUtils';
 import { useToast } from "@/hooks/use-toast";
 import { CategoriesSection } from '@/components/admin/CategoriesSection';
 import { ArticlesSection } from '@/components/admin/ArticlesSection';
+import { AdvertisementsSection } from '@/components/admin/AdvertisementsSection';
 
 interface Category {
   id: number;
@@ -31,7 +31,6 @@ export const AdminDashboard = () => {
         .select('*, categories(name, slug)')
         .order('published_at', { ascending: false });
 
-      // If a category is specified, filter articles by that category
       if (categorySlug) {
         const { data: categoryData } = await supabase
           .from('categories')
@@ -58,7 +57,6 @@ export const AdminDashboard = () => {
       console.log('Fetched articles:', articlesResponse.data.length);
       console.log('Fetched categories:', categoriesResponse.data);
       
-      // Map articles with their proper properties
       const mappedArticles: Article[] = articlesResponse.data.map(article => ({
         id: article.id,
         title: article.title,
@@ -78,16 +76,13 @@ export const AdminDashboard = () => {
       }));
 
       if (categorySlug) {
-        // Remove existing articles from this category before adding new ones
         setArticles(prevArticles => {
           const otherArticles = prevArticles.filter(article => 
             article.categories?.slug !== categorySlug
           );
           
-          // Create a Set of existing URLs to prevent duplicates
           const existingUrls = new Set(otherArticles.map(a => a.url));
           
-          // Only add new articles that don't already exist
           const newArticles = mappedArticles.filter(article => 
             !existingUrls.has(article.url)
           );
@@ -95,8 +90,6 @@ export const AdminDashboard = () => {
           return [...newArticles, ...otherArticles];
         });
       } else {
-        // For initial load, just set all articles
-        // Remove duplicates based on URL
         const uniqueArticles = Array.from(
           new Map(mappedArticles.map(article => [article.url, article])).values()
         );
@@ -105,7 +98,6 @@ export const AdminDashboard = () => {
       
       setCategories(categoriesResponse.data);
 
-      // Show success message for category refresh
       if (categorySlug) {
         const categoryName = categoriesResponse.data.find(cat => cat.slug === categorySlug)?.name;
         toast({
@@ -164,7 +156,6 @@ export const AdminDashboard = () => {
         description: `Started refreshing feeds for ${categorySlug}`,
       });
 
-      // Fetch new data specifically for this category
       await fetchData(categorySlug);
 
     } catch (error) {
@@ -192,6 +183,7 @@ export const AdminDashboard = () => {
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
       <div className="space-y-8">
+        <AdvertisementsSection />
         <CategoriesSection
           categories={categories}
           onRefreshSource={refreshSource}
@@ -205,4 +197,3 @@ export const AdminDashboard = () => {
     </div>
   );
 };
-

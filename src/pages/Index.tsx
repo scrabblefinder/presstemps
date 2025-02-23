@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useRSSFeed } from "@/hooks/useRSSFeed";
 import { RSSArticle } from "@/utils/rssUtils";
@@ -40,7 +39,6 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
     return [];
   }
 
-  // Create a Map to count article clicks and maintain uniqueness
   const clickCountMap = new Map<number, number>();
   for (const click of clickCounts) {
     if (click.article_id) {
@@ -48,7 +46,6 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
     }
   }
 
-  // Get unique article IDs sorted by click count
   const sortedArticleIds = Array.from(clickCountMap.entries())
     .sort(([, countA], [, countB]) => countB - countA)
     .slice(0, 10)
@@ -71,12 +68,10 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
     throw articlesError;
   }
 
-  // Deduplicate articles based on URL
   const uniqueArticles = Array.from(
     new Map(articles.map(article => [article.url, article])).values()
   );
 
-  // Sort unique articles by click count
   const sortedArticles = uniqueArticles.sort((a, b) => 
     (clickCountMap.get(b.id) || 0) - (clickCountMap.get(a.id) || 0)
   );
@@ -95,6 +90,30 @@ const fetchPopularArticles = async (): Promise<RSSArticle[]> => {
   }));
 };
 
+const fetchAdvertisements = async (): Promise<RSSArticle[]> => {
+  const { data: ads, error } = await supabase
+    .from('advertisements')
+    .select('*')
+    .eq('is_active', true);
+
+  if (error) {
+    console.error('Error fetching advertisements:', error);
+    return [];
+  }
+
+  return ads.map(ad => ({
+    title: ad.title,
+    excerpt: ad.excerpt || '',
+    image: ad.image_url,
+    category: 'AD',
+    source: ad.source_text,
+    date: ad.created_at,
+    author: ad.source_text,
+    url: '#',
+    isAd: true
+  }));
+};
+
 interface IndexProps {
   selectedCategory?: string;
 }
@@ -107,10 +126,15 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
   const { data: popularArticles = [] } = useQuery({
     queryKey: ['popularArticles'],
     queryFn: fetchPopularArticles,
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: 60000,
   });
 
-  // Track article clicks
+  const { data: advertisements = [] } = useQuery({
+    queryKey: ['advertisements'],
+    queryFn: fetchAdvertisements,
+    refetchInterval: 300000,
+  });
+
   const trackArticleClick = async (articleUrl: string) => {
     console.log('Tracking click for article:', articleUrl);
     
@@ -128,7 +152,6 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
     }
   };
 
-  // Filter and deduplicate articles based on category and search query
   const filteredArticles = React.useMemo(() => {
     const articles = (allArticles || []).filter(article => {
       const matchesCategory = selectedCategory === 'all' || 
@@ -141,16 +164,20 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
       return searchContent.includes(searchQuery.toLowerCase());
     });
 
-    // Deduplicate articles based on URL
     const uniqueArticles = Array.from(
       new Map(articles.map(article => [article.url, article])).values()
     );
 
-    // Sort by date
-    return uniqueArticles.sort((a, b) => 
+    const sortedArticles = uniqueArticles.sort((a, b) => 
       new Date(b.date || '').getTime() - new Date(a.date || '').getTime()
     );
-  }, [allArticles, selectedCategory, searchQuery]);
+
+    if (advertisements.length > 0) {
+      sortedArticles.splice(3, 0, ...advertisements);
+    }
+
+    return sortedArticles;
+  }, [allArticles, selectedCategory, searchQuery, advertisements]);
 
   const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
   const paginatedArticles = filteredArticles.slice(
@@ -158,7 +185,6 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
     currentPage * ARTICLES_PER_PAGE
   );
 
-  // Reset to first page when category changes
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory]);
