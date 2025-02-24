@@ -34,14 +34,15 @@ const mapArticleToRSSArticle = (article: Article): RSSArticle => {
     title: article.title,
     originalUrl: article.url,
     fallbackUrl: fallbackUrl,
-    categoryId: article.category_id
+    categoryId: article.category_id,
+    categorySlug: article.categories?.slug
   });
 
   return {
     title: decodeHTMLEntities(article.title),
     excerpt: decodeHTMLEntities(article.excerpt || ''),
     image: article.image_url,
-    category: article.category_id.toString(),
+    category: article.categories?.slug || 'uncategorized',  // Use the category slug instead of ID
     source: article.source || 'unknown',
     date: article.published_at || article.created_at,
     author: article.author || 'unknown',
@@ -69,20 +70,7 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
   let query = supabase
     .from('articles')
     .select(`
-      id,
-      title,
-      slug,
-      content,
-      excerpt,
-      image_url,
-      original_image_url,
-      category_id,
-      source,
-      author,
-      published_at,
-      created_at,
-      updated_at,
-      url,
+      *,
       categories:category_id (
         name,
         slug
@@ -91,6 +79,7 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
     .order('published_at', { ascending: false });
 
   if (category && category !== 'all') {
+    console.log('Filtering by category slug:', category);
     const { data: categoryData } = await supabase
       .from('categories')
       .select('id')
@@ -98,7 +87,11 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
       .single();
 
     if (categoryData) {
+      console.log('Found category ID:', categoryData.id);
       query = query.eq('category_id', categoryData.id);
+    } else {
+      console.log('Category not found:', category);
+      return [];
     }
   }
 
