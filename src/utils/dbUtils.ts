@@ -32,17 +32,15 @@ const mapArticleToRSSArticle = (article: Article): RSSArticle => {
     
   console.log('Mapping article:', {
     title: article.title,
-    originalUrl: article.url,
-    fallbackUrl: fallbackUrl,
-    categoryId: article.category_id,
-    categorySlug: article.categories?.slug
+    category: article.categories?.slug,
+    categoryId: article.category_id
   });
 
   return {
     title: decodeHTMLEntities(article.title),
     excerpt: decodeHTMLEntities(article.excerpt || ''),
     image: article.image_url,
-    category: article.categories?.slug || 'uncategorized',  // Use the category slug instead of ID
+    category: article.categories?.slug || article.category_id.toString(),  // Fallback to ID if slug not available
     source: article.source || 'unknown',
     date: article.published_at || article.created_at,
     author: article.author || 'unknown',
@@ -71,15 +69,11 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
     .from('articles')
     .select(`
       *,
-      categories:category_id (
-        name,
-        slug
-      )
+      categories(name, slug)
     `)
     .order('published_at', { ascending: false });
 
   if (category && category !== 'all') {
-    console.log('Filtering by category slug:', category);
     const { data: categoryData } = await supabase
       .from('categories')
       .select('id')
@@ -87,10 +81,8 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
       .single();
 
     if (categoryData) {
-      console.log('Found category ID:', categoryData.id);
       query = query.eq('category_id', categoryData.id);
     } else {
-      console.log('Category not found:', category);
       return [];
     }
   }
@@ -107,10 +99,7 @@ export const fetchArticles = async (category?: string): Promise<RSSArticle[]> =>
     new Map(data?.map(article => [article.slug, article])).values()
   );
   
-  console.log('Articles from database:', uniqueArticles);
   const mappedArticles = (uniqueArticles as Article[]).map(mapArticleToRSSArticle);
-  console.log('Mapped articles:', mappedArticles);
-  
   return mappedArticles;
 };
 
@@ -119,10 +108,7 @@ export const fetchArticleBySlug = async (slug: string): Promise<RSSArticle> => {
     .from('articles')
     .select(`
       *,
-      categories:category_id (
-        name,
-        slug
-      )
+      categories(name, slug)
     `)
     .eq('slug', slug)
     .single();
