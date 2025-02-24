@@ -3,15 +3,15 @@ import { Link } from "react-router-dom";
 
 const categories = [
   { name: "All", slug: "all" },
-  { name: "Politics", slug: "6" },
-  { name: "US", slug: "7" },
-  { name: "World News", slug: "5" },
-  { name: "Sports", slug: "8" },
-  { name: "Business", slug: "3" },
-  { name: "Technology", slug: "1" },
-  { name: "Entertainment", slug: "4" },
-  { name: "Science", slug: "2" },
-  { name: "Lifestyle", slug: "10" }
+  { name: "Politics", slug: "politics" },
+  { name: "US", slug: "us" },
+  { name: "World News", slug: "world" },  // Updated to use correct slug
+  { name: "Sports", slug: "sports" },
+  { name: "Business", slug: "business" },
+  { name: "Technology", slug: "technology" },
+  { name: "Entertainment", slug: "entertainment" },
+  { name: "Science", slug: "science" },
+  { name: "Lifestyle", slug: "lifestyle" }
 ];
 
 interface HeaderProps {
