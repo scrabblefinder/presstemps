@@ -9,22 +9,18 @@ interface ArticleListProps {
 }
 
 export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: ArticleListProps) => {
-  // Helper function to get category display name
   const getCategoryDisplayName = (categoryId: string | number, isAd?: boolean): string => {
-    // If it's an advertisement, return "Ad"
     if (isAd) {
       return 'Ad';
     }
     
     console.log('Category ID received:', categoryId, 'Type:', typeof categoryId);
     
-    // If categoryId is undefined or null, return Uncategorized
     if (!categoryId) {
       console.log('Category ID is undefined or null');
       return 'Uncategorized';
     }
 
-    // Convert string to number if it's a numeric string
     const id = typeof categoryId === 'string' ? parseInt(categoryId, 10) : categoryId;
     console.log('Parsed category ID:', id);
     
@@ -37,11 +33,11 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
       6: 'Politics',
       7: 'US',
       8: 'Sports',
-      9: 'World News',  // Added to handle both 5 and 9 as World News
+      9: 'World News',
       10: 'Lifestyle',
-      'world': 'World News',  // Handle string "world" category
-      'World News': 'World News',  // Handle exact "World News" string
-      'World': 'World News'  // Handle "World" string
+      'world': 'World News',
+      'World News': 'World News',
+      'World': 'World News'
     };
 
     const displayName = categoryMap[id] || categoryMap[categoryId] || 'Uncategorized';
@@ -56,43 +52,61 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
       {articles.map((article) => {
         console.log('Processing article:', article.title, 'Category:', article.category);
         return (
-          <a
+          <article 
             key={article.url}
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
             className="group block"
-            onClick={() => onArticleClick?.(article.url)}
+            itemScope 
+            itemType="https://schema.org/NewsArticle"
           >
-            <article className="flex gap-6 items-start p-4 rounded-lg hover:bg-white transition-colors">
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => onArticleClick?.(article.url)}
+              className="flex gap-6 items-start p-4 rounded-lg hover:bg-white transition-colors"
+            >
               <div className="flex-shrink-0 w-48 h-32 overflow-hidden rounded-lg">
                 <img
                   src={article.image}
-                  alt={article.title}
+                  alt={`Image for article: ${article.title}`}
                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  decoding="async"
+                  itemProp="image"
                 />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 text-sm mb-2">
-                  <span className="text-blue-600 font-medium">
+                  <span className="text-blue-600 font-medium" itemProp="articleSection">
                     {getCategoryDisplayName(article.category, article.isAd)}
                   </span>
                   <span className="text-ink-light">•</span>
-                  <span className="text-ink-light">{article.source}</span>
+                  <span className="text-ink-light" itemProp="publisher">
+                    {article.source}
+                  </span>
                 </div>
-                <h3 className="text-xl font-semibold text-ink-dark group-hover:text-ink mb-2">
+                <h3 
+                  className="text-xl font-semibold text-ink-dark group-hover:text-ink mb-2"
+                  itemProp="headline"
+                >
                   {article.title}
                 </h3>
-                <p className="text-ink-light text-sm line-clamp-2 mb-3">
+                <p 
+                  className="text-ink-light text-sm line-clamp-2 mb-3"
+                  itemProp="description"
+                >
                   {article.excerpt}
                 </p>
                 <div className="flex items-center gap-2 text-xs text-ink-light">
                   <Clock3 className="w-3 h-3" />
-                  <span>{calculateReadingTime(article.date)} min read</span>
+                  <span>
+                    <meta itemProp="datePublished" content={article.date} />
+                    {calculateReadingTime(article.date)} min read
+                  </span>
                 </div>
               </div>
-            </article>
-          </a>
+            </a>
+          </article>
         );
       })}
     </div>
