@@ -2,53 +2,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://presstemps.com/</loc>
+    <loc>https://www.presstemps.com/</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/politics</loc>
+    <loc>https://www.presstemps.com/politics</loc>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/world</loc>
+    <loc>https://www.presstemps.com/world</loc>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/technology</loc>
+    <loc>https://www.presstemps.com/technology</loc>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/sports</loc>
+    <loc>https://www.presstemps.com/sports</loc>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/business</loc>
+    <loc>https://www.presstemps.com/business</loc>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/entertainment</loc>
+    <loc>https://www.presstemps.com/entertainment</loc>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/about</loc>
+    <loc>https://www.presstemps.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/privacy</loc>
+    <loc>https://www.presstemps.com/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://presstemps.com/terms</loc>
+    <loc>https://www.presstemps.com/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
