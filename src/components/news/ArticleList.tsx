@@ -60,6 +60,21 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
     return displayName;
   };
 
+  const getTechArticleImage = (article: RSSArticle): string => {
+    if (article.source === 'TechCrunch' && article.image.includes('unsplash.com')) {
+      // Rotate between different tech-themed images for variety
+      const techImages = [
+        'photo-1488590528505-98d2b5aba04b',
+        'photo-1461749280684-dccba630e2f6',
+        'photo-1487058792275-0ad4aaf24ca7',
+        'photo-1498050108023-c5249f4df085'
+      ];
+      const index = Math.floor(article.title.length % techImages.length);
+      return `https://images.unsplash.com/${techImages[index]}`;
+    }
+    return article.image;
+  };
+
   console.log('Articles received in ArticleList:', articles);
 
   return (
@@ -82,7 +97,7 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
             >
               <div className="flex-shrink-0 w-48 h-32 overflow-hidden rounded-lg">
                 <img
-                  src={article.image}
+                  src={getTechArticleImage(article)}
                   alt={`Image for article: ${article.title}`}
                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
