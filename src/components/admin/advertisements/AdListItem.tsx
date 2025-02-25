@@ -58,7 +58,7 @@ export const AdListItem = ({ ad, onDelete, onToggleStatus, onUpdate }: AdListIte
           <div className="flex flex-col gap-2">
             <Button
               variant={ad.is_active ? "destructive" : "default"}
-              onClick={() => toggleAdStatus(ad.id, !!ad.is_active)}
+              onClick={() => onToggleStatus(ad.id, !!ad.is_active)}
             >
               {ad.is_active ? 'Deactivate' : 'Activate'}
             </Button>
