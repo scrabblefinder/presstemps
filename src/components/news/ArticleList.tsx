@@ -37,11 +37,26 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
       10: 'Lifestyle',
       'world': 'World News',
       'World News': 'World News',
-      'World': 'World News'
+      'World': 'World News',
+      'technology': 'Technology',
+      'science': 'Science',
+      'business': 'Business',
+      'entertainment': 'Entertainment',
+      'politics': 'Politics',
+      'us': 'US',
+      'sports': 'Sports',
+      'lifestyle': 'Lifestyle'
     };
 
-    const displayName = categoryMap[id] || categoryMap[categoryId] || 'Uncategorized';
+    // First try to get the display name directly from the map
+    const displayName = categoryMap[categoryId] || categoryMap[id] || 'Uncategorized';
     console.log('Display name chosen:', displayName);
+    
+    // If we get a string category, try to capitalize first letter
+    if (typeof categoryId === 'string' && displayName === 'Uncategorized') {
+      return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+    }
+    
     return displayName;
   };
 
