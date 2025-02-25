@@ -44,27 +44,24 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
       {activeAds.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold mb-4 text-ink-dark flex items-center gap-2">
-            <LinkIcon className="w-5 h-5 text-blue-500" />
+            <LinkIcon className="w-5 h-5 text-[#9b87f5]" />
             Sponsored Links
           </h2>
-          <div className="space-y-3">
-            {activeAds.map((ad) => (
-              <a
-                key={ad.id}
-                href={ad.url || '#'}
-                className="block text-sm text-ink-light hover:text-blue-600 hover:underline transition-colors"
-                target="_blank"
-                rel="sponsored noopener noreferrer"
-                title={ad.excerpt || ad.title}
-              >
-                {ad.title}
-                {ad.source_text && (
-                  <span className="text-xs text-gray-400 ml-1">
-                    ({ad.source_text})
-                  </span>
-                )}
-              </a>
-            ))}
+          <div className="bg-[#F1F0FB] rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+              {activeAds.map((ad) => (
+                <a
+                  key={ad.id}
+                  href={ad.url || '#'}
+                  className="block text-sm bg-[#E5DEFF] px-3 py-2 rounded hover:bg-[#D6BCFA] text-[#8E9196] hover:text-ink-dark transition-colors line-clamp-2"
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  title={ad.title}
+                >
+                  {ad.title}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       )}
