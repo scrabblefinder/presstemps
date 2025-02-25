@@ -9,7 +9,7 @@ interface PopularNewsSidebarProps {
 }
 
 export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
-  const { data: advertisements = [] } = useAdvertisements();
+  const { data: advertisements = [] } = useAdvertisements('text');
   const activeAds = advertisements.filter((ad): ad is Advertisement => 
     ad.is_active === true
   ).slice(0, 8);

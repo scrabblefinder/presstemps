@@ -20,4 +20,5 @@ export interface Advertisement {
   is_active: boolean | null;
   created_at: string | null;
   image_url: string;
+  type: 'image' | 'text';
 }
