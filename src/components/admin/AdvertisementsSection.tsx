@@ -1,14 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2 } from "lucide-react";
 import { Advertisement } from '@/utils/types/rssTypes';
-
-type NewAdvertisement = Omit<Advertisement, 'id' | 'is_active' | 'created_at'>;
+import { NewAdvertisement } from './types/advertisementTypes';
+import { ImageAdForm } from './advertisements/ImageAdForm';
+import { TextLinkForm } from './advertisements/TextLinkForm';
+import { AdListItem } from './advertisements/AdListItem';
 
 export const AdvertisementsSection = () => {
   const { toast } = useToast();
@@ -153,179 +152,31 @@ export const AdvertisementsSection = () => {
         </TabsList>
 
         <TabsContent value="image">
-          <form onSubmit={createAd} className="space-y-4 bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold">Create New Image Advertisement</h3>
-            <Input
-              placeholder="Title"
-              value={newAd.title}
-              onChange={e => setNewAd({ ...newAd, title: e.target.value, type: 'image' })}
-              required
-            />
-            <Textarea
-              placeholder="Excerpt"
-              value={newAd.excerpt || ''}
-              onChange={e => setNewAd({ ...newAd, excerpt: e.target.value })}
-              required
-            />
-            <Input
-              placeholder="Image URL"
-              value={newAd.image_url}
-              onChange={e => setNewAd({ ...newAd, image_url: e.target.value })}
-              required
-            />
-            <Input
-              placeholder="Advertisement URL"
-              value={newAd.url || ''}
-              onChange={e => setNewAd({ ...newAd, url: e.target.value })}
-              required
-            />
-            <Input
-              placeholder="Source Text (e.g., 'Sponsored by TechCorp')"
-              value={newAd.source_text}
-              onChange={e => setNewAd({ ...newAd, source_text: e.target.value })}
-              required
-            />
-            <Button type="submit">Create Image Advertisement</Button>
-          </form>
-
+          <ImageAdForm newAd={newAd} setNewAd={setNewAd} onSubmit={createAd} />
           <div className="space-y-4 mt-6">
             {imageAds.map(ad => (
-              <div key={ad.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2 flex-1 mr-4">
-                      <Input
-                        value={ad.title}
-                        onChange={e => updateAd(ad.id, { title: e.target.value })}
-                        className="font-semibold"
-                      />
-                      <Textarea
-                        value={ad.excerpt || ''}
-                        onChange={e => updateAd(ad.id, { excerpt: e.target.value })}
-                        className="text-sm text-gray-600"
-                      />
-                      <div className="flex gap-4">
-                        <Input
-                          value={ad.image_url}
-                          onChange={e => updateAd(ad.id, { image_url: e.target.value })}
-                          className="text-sm"
-                          placeholder="Image URL"
-                        />
-                        <Input
-                          value={ad.source_text}
-                          onChange={e => updateAd(ad.id, { source_text: e.target.value })}
-                          className="text-sm"
-                          placeholder="Source Text"
-                        />
-                      </div>
-                      <Input
-                        value={ad.url || ''}
-                        onChange={e => updateAd(ad.id, { url: e.target.value })}
-                        className="text-sm"
-                        placeholder="Advertisement URL"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        variant={ad.is_active ? "destructive" : "default"}
-                        onClick={() => toggleAdStatus(ad.id, ad.is_active)}
-                      >
-                        {ad.is_active ? 'Deactivate' : 'Activate'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => deleteAd(ad.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  {ad.is_active && (
-                    <div className="text-sm text-green-600 font-medium">
-                      Currently Active
-                    </div>
-                  )}
-                </div>
-              </div>
+              <AdListItem
+                key={ad.id}
+                ad={ad}
+                onDelete={deleteAd}
+                onToggleStatus={toggleAdStatus}
+                onUpdate={updateAd}
+              />
             ))}
           </div>
         </TabsContent>
 
         <TabsContent value="text">
-          <form onSubmit={createAd} className="space-y-4 bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold">Create New Text Link</h3>
-            <Input
-              placeholder="Link Text"
-              value={newAd.title}
-              onChange={e => setNewAd({ ...newAd, title: e.target.value, type: 'text' })}
-              required
-            />
-            <Input
-              placeholder="Link URL"
-              value={newAd.url || ''}
-              onChange={e => setNewAd({ ...newAd, url: e.target.value })}
-              required
-            />
-            <Input
-              placeholder="Source Text (e.g., 'Sponsored')"
-              value={newAd.source_text}
-              onChange={e => setNewAd({ ...newAd, source_text: e.target.value })}
-              required
-            />
-            <Button type="submit">Create Text Link</Button>
-          </form>
-
+          <TextLinkForm newAd={newAd} setNewAd={setNewAd} onSubmit={createAd} />
           <div className="space-y-4 mt-6">
             {textAds.map(ad => (
-              <div key={ad.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2 flex-1 mr-4">
-                      <Input
-                        value={ad.title}
-                        onChange={e => updateAd(ad.id, { title: e.target.value })}
-                        className="font-semibold"
-                        placeholder="Link Text"
-                      />
-                      <Input
-                        value={ad.url || ''}
-                        onChange={e => updateAd(ad.id, { url: e.target.value })}
-                        className="text-sm"
-                        placeholder="Link URL"
-                      />
-                      <Input
-                        value={ad.source_text}
-                        onChange={e => updateAd(ad.id, { source_text: e.target.value })}
-                        className="text-sm"
-                        placeholder="Source Text"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        variant={ad.is_active ? "destructive" : "default"}
-                        onClick={() => toggleAdStatus(ad.id, ad.is_active)}
-                      >
-                        {ad.is_active ? 'Deactivate' : 'Activate'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => deleteAd(ad.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  {ad.is_active && (
-                    <div className="text-sm text-green-600 font-medium">
-                      Currently Active
-                    </div>
-                  )}
-                </div>
-              </div>
+              <AdListItem
+                key={ad.id}
+                ad={ad}
+                onDelete={deleteAd}
+                onToggleStatus={toggleAdStatus}
+                onUpdate={updateAd}
+              />
             ))}
           </div>
         </TabsContent>
