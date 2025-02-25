@@ -23,7 +23,7 @@ export const useAdvertisements = (type?: 'image' | 'text') => {
         return [];
       }
 
-      return ads;
+      return (ads as Advertisement[]) || [];
     },
     refetchInterval: 300000,
   });

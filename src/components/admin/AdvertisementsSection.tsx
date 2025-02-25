@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -7,28 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trash2 } from "lucide-react";
+import { Advertisement } from '@/utils/types/rssTypes';
 
-interface Advertisement {
-  id: number;
-  title: string;
-  excerpt: string | null;
-  image_url: string;
-  source_text: string;
-  is_active: boolean;
-  url: string | null;
-  type: 'image' | 'text';
-}
+type NewAdvertisement = Omit<Advertisement, 'id' | 'is_active' | 'created_at'>;
 
 export const AdvertisementsSection = () => {
   const { toast } = useToast();
   const [ads, setAds] = useState<Advertisement[]>([]);
-  const [newAd, setNewAd] = useState({
+  const [newAd, setNewAd] = useState<NewAdvertisement>({
     title: '',
     excerpt: '',
     image_url: '',
     source_text: '',
     url: '',
-    type: 'image' as const,
+    type: 'image',
   });
 
   useEffect(() => {
@@ -50,7 +41,7 @@ export const AdvertisementsSection = () => {
       return;
     }
 
-    setAds(data || []);
+    setAds(data as Advertisement[] || []);
   };
 
   const createAd = async (e: React.FormEvent) => {
@@ -167,31 +158,31 @@ export const AdvertisementsSection = () => {
             <Input
               placeholder="Title"
               value={newAd.title}
-              onChange={e => setNewAd(prev => ({ ...prev, title: e.target.value, type: 'image' }))}
+              onChange={e => setNewAd({ ...newAd, title: e.target.value, type: 'image' })}
               required
             />
             <Textarea
               placeholder="Excerpt"
-              value={newAd.excerpt}
-              onChange={e => setNewAd(prev => ({ ...prev, excerpt: e.target.value }))}
+              value={newAd.excerpt || ''}
+              onChange={e => setNewAd({ ...newAd, excerpt: e.target.value })}
               required
             />
             <Input
               placeholder="Image URL"
               value={newAd.image_url}
-              onChange={e => setNewAd(prev => ({ ...prev, image_url: e.target.value }))}
+              onChange={e => setNewAd({ ...newAd, image_url: e.target.value })}
               required
             />
             <Input
               placeholder="Advertisement URL"
-              value={newAd.url}
-              onChange={e => setNewAd(prev => ({ ...prev, url: e.target.value }))}
+              value={newAd.url || ''}
+              onChange={e => setNewAd({ ...newAd, url: e.target.value })}
               required
             />
             <Input
               placeholder="Source Text (e.g., 'Sponsored by TechCorp')"
               value={newAd.source_text}
-              onChange={e => setNewAd(prev => ({ ...prev, source_text: e.target.value }))}
+              onChange={e => setNewAd({ ...newAd, source_text: e.target.value })}
               required
             />
             <Button type="submit">Create Image Advertisement</Button>
@@ -268,19 +259,19 @@ export const AdvertisementsSection = () => {
             <Input
               placeholder="Link Text"
               value={newAd.title}
-              onChange={e => setNewAd(prev => ({ ...prev, title: e.target.value, type: 'text' }))}
+              onChange={e => setNewAd({ ...newAd, title: e.target.value, type: 'text' })}
               required
             />
             <Input
               placeholder="Link URL"
-              value={newAd.url}
-              onChange={e => setNewAd(prev => ({ ...prev, url: e.target.value }))}
+              value={newAd.url || ''}
+              onChange={e => setNewAd({ ...newAd, url: e.target.value })}
               required
             />
             <Input
               placeholder="Source Text (e.g., 'Sponsored')"
               value={newAd.source_text}
-              onChange={e => setNewAd(prev => ({ ...prev, source_text: e.target.value }))}
+              onChange={e => setNewAd({ ...newAd, source_text: e.target.value })}
               required
             />
             <Button type="submit">Create Text Link</Button>
