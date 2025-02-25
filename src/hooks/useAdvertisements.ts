@@ -1,12 +1,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { RSSArticle } from "@/utils/types/rssTypes";
+import { Advertisement } from "@/utils/types/rssTypes";
 
 export const useAdvertisements = () => {
   return useQuery({
     queryKey: ['advertisements'],
-    queryFn: async (): Promise<RSSArticle[]> => {
+    queryFn: async (): Promise<Advertisement[]> => {
       const { data: ads, error } = await supabase
         .from('advertisements')
         .select('*')
@@ -17,17 +17,7 @@ export const useAdvertisements = () => {
         return [];
       }
 
-      return ads.map(ad => ({
-        title: ad.title,
-        excerpt: ad.excerpt || '',
-        image: ad.image_url,
-        category: 'AD',
-        source: ad.source_text,
-        date: ad.created_at,
-        author: ad.source_text,
-        url: ad.url || '#',
-        isAd: true
-      }));
+      return ads;
     },
     refetchInterval: 300000,
   });

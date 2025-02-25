@@ -10,3 +10,14 @@ export interface RSSArticle {
   url: string;
   isAd?: boolean;
 }
+
+export interface Advertisement {
+  id: number;
+  title: string;
+  url: string | null;
+  excerpt: string | null;
+  source_text: string;
+  is_active: boolean | null;
+  created_at: string | null;
+  image_url: string;
+}

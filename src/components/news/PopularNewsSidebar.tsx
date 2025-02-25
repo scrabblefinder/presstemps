@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Flame, Link as LinkIcon } from 'lucide-react';
-import { RSSArticle } from '@/utils/types/rssTypes';
+import { RSSArticle, Advertisement } from '@/utils/types/rssTypes';
 import { useAdvertisements } from '@/hooks/useAdvertisements';
 
 interface PopularNewsSidebarProps {
@@ -10,7 +10,9 @@ interface PopularNewsSidebarProps {
 
 export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
   const { data: advertisements = [] } = useAdvertisements();
-  const activeAds = advertisements.filter(ad => ad.is_active).slice(0, 8);
+  const activeAds = advertisements.filter((ad): ad is Advertisement => 
+    ad.is_active === true
+  ).slice(0, 8);
 
   return (
     <div className="space-y-8">
@@ -68,4 +70,4 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
       )}
     </div>
   );
-}
+};
