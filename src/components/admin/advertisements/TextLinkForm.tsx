@@ -20,12 +20,6 @@ export const TextLinkForm = ({ newAd, setNewAd, onSubmit }: AdFormProps) => {
         onChange={e => setNewAd({ ...newAd, url: e.target.value })}
         required
       />
-      <Input
-        placeholder="Source Text (e.g., 'Sponsored')"
-        value={newAd.source_text}
-        onChange={e => setNewAd({ ...newAd, source_text: e.target.value })}
-        required
-      />
       <Button type="submit">Create Text Link</Button>
     </form>
   );

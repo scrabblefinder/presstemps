@@ -48,14 +48,6 @@ export const AdListItem = ({ ad, onDelete, onToggleStatus, onUpdate }: AdListIte
                 </div>
               </>
             )}
-            {ad.type === 'text' && (
-              <Input
-                value={ad.source_text}
-                onChange={e => onUpdate(ad.id, { source_text: e.target.value })}
-                className="text-sm"
-                placeholder="Source Text"
-              />
-            )}
             <Input
               value={ad.url || ''}
               onChange={e => onUpdate(ad.id, { url: e.target.value })}
@@ -66,7 +58,7 @@ export const AdListItem = ({ ad, onDelete, onToggleStatus, onUpdate }: AdListIte
           <div className="flex flex-col gap-2">
             <Button
               variant={ad.is_active ? "destructive" : "default"}
-              onClick={() => onToggleStatus(ad.id, !!ad.is_active)}
+              onClick={() => toggleAdStatus(ad.id, !!ad.is_active)}
             >
               {ad.is_active ? 'Deactivate' : 'Activate'}
             </Button>
