@@ -20,8 +20,12 @@ export const MainContent: React.FC<MainContentProps> = ({
   onPageChange,
   onArticleClick,
 }) => {
-  // Filter out any advertisement entries from the articles array
-  const filteredArticles = articles.filter(article => !('is_sponsored' in article));
+  // Filter out advertisements and sponsored content
+  const filteredArticles = articles.filter(article => 
+    !article.isAd && 
+    !('is_sponsored' in article) && 
+    !article.title?.includes('sponsored')
+  );
 
   return (
     <div className="lg:col-span-2">
