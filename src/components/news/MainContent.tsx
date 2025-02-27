@@ -20,12 +20,15 @@ export const MainContent: React.FC<MainContentProps> = ({
   onPageChange,
   onArticleClick,
 }) => {
+  // Filter out any advertisement entries from the articles array
+  const filteredArticles = articles.filter(article => !('is_sponsored' in article));
+
   return (
     <div className="lg:col-span-2">
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="animate-fade-in">
           <ArticleList 
-            articles={articles}
+            articles={filteredArticles}
             calculateReadingTime={calculateReadingTime}
             onArticleClick={onArticleClick}
           />
