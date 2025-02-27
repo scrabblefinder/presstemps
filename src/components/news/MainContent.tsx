@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { RSSArticle } from "@/utils/types/rssTypes";
 import { ArticleList } from "./ArticleList";
@@ -20,12 +19,16 @@ export const MainContent: React.FC<MainContentProps> = ({
   onPageChange,
   onArticleClick,
 }) => {
-  // Filter out advertisements and sponsored content
-  const filteredArticles = articles.filter(article => 
-    !article.isAd && 
-    !('is_sponsored' in article) && 
-    !article.title?.includes('sponsored')
-  );
+  // Filter out text advertisements - ONLY keep regular articles and image ads
+  const filteredArticles = articles.filter(article => {
+    // If it's an ad, make sure it has an image (keep image ads only)
+    if (article.isAd) {
+      return article.image && article.image.length > 0;
+    }
+    
+    // Always keep regular articles
+    return true;
+  });
 
   return (
     <div className="lg:col-span-2">
