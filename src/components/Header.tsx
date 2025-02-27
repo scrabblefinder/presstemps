@@ -24,13 +24,6 @@ export function Header({ onCategoryChange, activeCategory }: HeaderProps) {
     <header className="w-full bg-paper-light border-b border-paper-dark" role="banner">
       <div className="container mx-auto px-4">
         <div className="relative py-8">
-          <Link 
-            to="/auth"
-            className="absolute right-0 top-4 text-sm text-ink-light hover:text-ink-dark transition-colors"
-            aria-label="Login to account"
-          >
-            Login
-          </Link>
           <button 
             onClick={() => onCategoryChange('all')}
             className="block text-center w-full"
