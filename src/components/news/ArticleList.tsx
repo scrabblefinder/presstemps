@@ -78,7 +78,7 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
   console.log('Articles received in ArticleList:', articles);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {articles.map((article) => {
         console.log('Processing article:', article.title, 'Category:', article.category);
         return (
@@ -93,9 +93,9 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => onArticleClick?.(article.url)}
-              className="flex gap-6 items-start p-4 rounded-lg hover:bg-white transition-colors"
+              className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-2 sm:p-4 rounded-lg hover:bg-white transition-colors"
             >
-              <div className="flex-shrink-0 w-48 h-32 overflow-hidden rounded-lg">
+              <div className="w-full sm:w-48 h-48 sm:h-32 flex-shrink-0 overflow-hidden rounded-lg mx-auto sm:mx-0">
                 <img
                   src={getTechArticleImage(article)}
                   alt={`Image for article: ${article.title}`}
@@ -106,7 +106,7 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
                 />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-3 text-sm mb-2">
+                <div className="flex items-center gap-3 text-xs sm:text-sm mb-2">
                   <span className="text-blue-600 font-medium" itemProp="articleSection">
                     {getCategoryDisplayName(article.category, article.isAd)}
                   </span>
@@ -116,13 +116,13 @@ export const ArticleList = ({ articles, calculateReadingTime, onArticleClick }: 
                   </span>
                 </div>
                 <h3 
-                  className="text-xl font-semibold text-ink-dark group-hover:text-ink mb-2"
+                  className="text-lg sm:text-xl font-semibold text-ink-dark group-hover:text-ink mb-2"
                   itemProp="headline"
                 >
                   {article.title}
                 </h3>
                 <p 
-                  className="text-ink-light text-sm line-clamp-2 mb-3"
+                  className="text-ink-light text-xs sm:text-sm line-clamp-2 mb-3"
                   itemProp="description"
                 >
                   {article.excerpt}

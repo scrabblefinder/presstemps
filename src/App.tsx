@@ -16,6 +16,12 @@ function App() {
   const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
+    // Set viewport meta tag for responsive design
+    const viewportMeta = document.createElement('meta');
+    viewportMeta.name = 'viewport';
+    viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    document.head.appendChild(viewportMeta);
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
@@ -28,12 +34,19 @@ function App() {
 
     return () => {
       subscription.unsubscribe();
+      document.head.removeChild(viewportMeta);
     };
   }, []);
 
   const handleCategoryChange = (category: string) => {
     console.log('Category changed:', category);
     setActiveCategory(category);
+    
+    // Scroll to top when changing categories on mobile
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   if (!isInitialized) {
@@ -42,7 +55,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-paper-light">
+      <div className="min-h-screen bg-paper-light flex flex-col">
         <Header onCategoryChange={handleCategoryChange} activeCategory={activeCategory} />
         <Routes>
           <Route path="/" element={<Index selectedCategory={activeCategory} />} />

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { RSSArticle } from "@/utils/types/rssTypes";
 import { ArticleList } from "./ArticleList";
@@ -31,15 +32,15 @@ export const MainContent: React.FC<MainContentProps> = ({
   });
 
   return (
-    <div className="lg:col-span-2">
-      <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="lg:col-span-2 w-full">
+      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
         <div className="animate-fade-in">
           <ArticleList 
             articles={filteredArticles}
             calculateReadingTime={calculateReadingTime}
             onArticleClick={onArticleClick}
           />
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

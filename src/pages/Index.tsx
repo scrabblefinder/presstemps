@@ -40,7 +40,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
   }, [selectedCategory]);
 
   return (
-    <main className="container mx-auto px-4 py-8 flex-1">
+    <main className="container mx-auto px-4 py-4 sm:py-8 flex-1">
       {isLoading ? (
         <LoadingSkeleton />
       ) : error ? (
@@ -48,7 +48,7 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
           <p className="text-ink-light">Failed to load articles. Please try again later.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <MainContent 
             articles={paginatedArticles}
             currentPage={currentPage}
@@ -57,16 +57,16 @@ const Index = ({ selectedCategory = 'all' }: IndexProps) => {
             onArticleClick={trackArticleClick}
           />
 
-          <aside className="lg:col-span-1 space-y-6">
-            <div className="sticky top-4 space-y-6">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
+          <aside className="lg:col-span-1 space-y-4 sm:space-y-6 mt-4 lg:mt-0">
+            <div className="sticky top-4 space-y-4 sm:space-y-6">
+              <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
                 <SearchSidebar 
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
                 />
               </div>
               
-              <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
                 <PopularNewsSidebar articles={popularArticles} />
               </div>
             </div>
