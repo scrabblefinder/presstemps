@@ -18,9 +18,10 @@ export const sortAndFilterArticles = (
   let filteredArticles = articles;
   if (selectedCategory && selectedCategory !== 'all') {
     filteredArticles = articles.filter(article => {
-      const normalizedArticleCategory = typeof article.category === 'string' 
-        ? article.category.toLowerCase() 
-        : article.category?.toString().toLowerCase();
+      const articleCategory = article.category;
+      const normalizedArticleCategory = typeof articleCategory === 'string' 
+        ? articleCategory.toLowerCase() 
+        : articleCategory ? String(articleCategory).toLowerCase() : '';
       
       return normalizedArticleCategory === selectedCategory.toLowerCase();
     });

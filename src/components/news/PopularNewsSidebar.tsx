@@ -47,13 +47,13 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
             <LinkIcon className="w-5 h-5 text-gray-400" />
             Sponsored Links
           </h2>
-          <div className="bg-white rounded-lg p-4">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="grid grid-cols-1 divide-y divide-gray-100">
               {activeAds.map((ad) => (
                 <a
                   key={ad.id}
                   href={ad.url || '#'}
-                  className="block text-sm text-ink-light hover:text-blue-600 hover:font-bold hover:underline transition-all line-clamp-2 p-2"
+                  className="block text-sm text-blue-600 hover:bg-blue-50 px-4 py-3 transition-colors"
                   target="_blank"
                   rel="sponsored noopener noreferrer"
                   title={ad.title}
