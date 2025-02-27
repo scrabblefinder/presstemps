@@ -1,3 +1,6 @@
+
+import { RSSArticle, Advertisement } from "@/utils/types/rssTypes";
+
 export const calculateReadingTime = (date: string): number => {
   if (!date) return 3;
   const now = new Date();
