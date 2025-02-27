@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { Article } from '@/utils/dbUtils';
+import { decodeHTMLEntities } from '@/utils/helpers/textUtils';
 
 interface ArticleCardProps {
   article: Article;
@@ -21,7 +22,7 @@ export const ArticleCard = ({ article, onDelete }: ArticleCardProps) => {
             {new Date(article.published_at || article.created_at).toLocaleDateString()}
           </span>
         </div>
-        <h3 className="text-lg font-medium mb-2">{article.title}</h3>
+        <h3 className="text-lg font-medium mb-2">{decodeHTMLEntities(article.title)}</h3>
         <p className="text-gray-600 text-sm line-clamp-2">{article.excerpt}</p>
       </div>
       <Button
