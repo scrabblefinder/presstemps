@@ -53,12 +53,14 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
                 <a
                   key={ad.id}
                   href={ad.url || '#'}
-                  className="block text-sm text-blue-600 hover:bg-blue-50 px-4 py-3 transition-colors"
+                  className="group block text-sm text-ink-light hover:bg-gray-50 px-4 py-3 transition-colors"
                   target="_blank"
                   rel="sponsored noopener noreferrer"
                   title={ad.title}
                 >
-                  {ad.title}
+                  <span className="group-hover:text-ink-dark group-hover:font-bold group-hover:underline transition-all">
+                    {ad.title}
+                  </span>
                 </a>
               ))}
             </div>
