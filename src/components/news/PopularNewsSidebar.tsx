@@ -4,22 +4,27 @@ import { Flame, Link as LinkIcon } from 'lucide-react';
 import { RSSArticle, Advertisement } from '@/utils/types/rssTypes';
 import { useAdvertisements } from '@/hooks/useAdvertisements';
 import { useLocation } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface PopularNewsSidebarProps {
   articles: RSSArticle[];
 }
 
-interface ExternalLink {
-  title: string;
-  url: string;
-  isActive: boolean;
+// Define the correct interface for external links based on the API response structure
+interface ExternalLinkItem {
+  position: string;
+  display_on: string;
+  custom_slug?: string;
+  links: string;
+  is_active: boolean;
 }
 
 export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
   const { data: advertisements = [] } = useAdvertisements('text');
-  const [externalLinks, setExternalLinks] = useState<ExternalLink[]>([]);
+  const [externalLinks, setExternalLinks] = useState<ExternalLinkItem[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(true);
   const location = useLocation();
+  const { toast } = useToast();
   
   const activeAds = advertisements.filter((ad): ad is Advertisement => 
     ad.is_active === true
@@ -47,13 +52,17 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         // Check if we have cached data that's not expired
         const cachedData = localStorage.getItem(cacheKey);
         if (cachedData) {
-          const { timestamp, content } = JSON.parse(cachedData);
-          // Check if cache is still valid (15 minutes)
-          if (timestamp && Date.now() - timestamp < 900000) {
-            console.log('Using cached external links data');
-            setExternalLinks(content);
-            setIsLoadingLinks(false);
-            return;
+          try {
+            const { timestamp, content } = JSON.parse(cachedData);
+            // Check if cache is still valid (15 minutes)
+            if (timestamp && Date.now() - timestamp < 900000) {
+              console.log('Using cached external links data');
+              setExternalLinks(content);
+              setIsLoadingLinks(false);
+              return;
+            }
+          } catch (error) {
+            console.log('Invalid cache data, fetching fresh data');
           }
         }
         
@@ -81,6 +90,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
           console.log('Successfully fetched external links');
         } else {
           console.error('Failed to fetch external links:', response.status);
+          throw new Error(`API responded with status: ${response.status}`);
         }
       } catch (error) {
         console.error('Error fetching external links:', error);
@@ -93,10 +103,15 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
   }, [location.pathname]); // Refetch when route changes
 
   // Filter external links based on position and display rules
-  const filterExternalLinks = () => {
+  const filterExternalLinks = (position: string = 'sidebar') => {
     if (!externalLinks || externalLinks.length === 0) return [];
     
     return externalLinks.filter(link => {
+      // Check if the link is active
+      if (!link.is_active) {
+        return false;
+      }
+      
       // Check if we should display on this page
       if (link.display_on === 'homepage' && !isHomePage()) {
         return false;
@@ -107,8 +122,8 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         return false;
       }
 
-      // Check position match (assuming 'sidebar' is our position)
-      if (link.position !== 'sidebar') {
+      // Check position match
+      if (link.position !== position) {
         return false;
       }
 
@@ -116,7 +131,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
     });
   };
 
-  const filteredExternalLinks = filterExternalLinks();
+  const filteredSidebarLinks = filterExternalLinks('sidebar');
 
   // Function to safely render HTML content
   const renderHTML = (htmlContent: string) => {
@@ -150,7 +165,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         </div>
       </div>
 
-      {filteredExternalLinks.length > 0 && (
+      {filteredSidebarLinks.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold mb-4 text-ink-dark flex items-center gap-2">
             <LinkIcon className="w-5 h-5 text-gray-400" />
@@ -158,7 +173,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
           </h2>
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="grid grid-cols-1 divide-y divide-gray-100">
-              {filteredExternalLinks.map((link, index) => (
+              {filteredSidebarLinks.map((link, index) => (
                 <div 
                   key={index}
                   className="text-sm text-ink-light hover:bg-gray-50 px-4 py-3 transition-colors"
@@ -170,7 +185,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         </div>
       )}
 
-      {activeAds.length > 0 && filteredExternalLinks.length === 0 && (
+      {activeAds.length > 0 && filteredSidebarLinks.length === 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold mb-4 text-ink-dark flex items-center gap-2">
             <LinkIcon className="w-5 h-5 text-gray-400" />
