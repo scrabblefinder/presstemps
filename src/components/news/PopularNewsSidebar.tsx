@@ -23,6 +23,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
   const { data: advertisements = [] } = useAdvertisements('text');
   const [externalLinks, setExternalLinks] = useState<ExternalLinkItem[]>([]);
   const [isLoadingLinks, setIsLoadingLinks] = useState(true);
+  const [externalLinksError, setExternalLinksError] = useState(false);
   const location = useLocation();
   const { toast } = useToast();
   
@@ -44,6 +45,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
     const fetchExternalLinks = async () => {
       try {
         setIsLoadingLinks(true);
+        setExternalLinksError(false);
         
         // Construct the site URL similar to the PHP version
         const siteUrl = window.location.origin;
@@ -90,10 +92,12 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
           console.log('Successfully fetched external links');
         } else {
           console.error('Failed to fetch external links:', response.status);
+          setExternalLinksError(true);
           throw new Error(`API responded with status: ${response.status}`);
         }
       } catch (error) {
         console.error('Error fetching external links:', error);
+        setExternalLinksError(true);
       } finally {
         setIsLoadingLinks(false);
       }
@@ -104,7 +108,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
 
   // Filter external links based on position and display rules
   const filterExternalLinks = (position: string = 'sidebar') => {
-    if (!externalLinks || externalLinks.length === 0) return [];
+    if (!externalLinks || externalLinks.length === 0 || externalLinksError) return [];
     
     return externalLinks.filter(link => {
       // Check if the link is active
@@ -185,7 +189,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         </div>
       )}
 
-      {activeAds.length > 0 && filteredSidebarLinks.length === 0 && (
+      {activeAds.length > 0 && (filteredSidebarLinks.length === 0 || externalLinksError) && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold mb-4 text-ink-dark flex items-center gap-2">
             <LinkIcon className="w-5 h-5 text-gray-400" />
