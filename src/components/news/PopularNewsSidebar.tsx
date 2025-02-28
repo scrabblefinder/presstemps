@@ -51,22 +51,9 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         const siteUrl = "https://presstemps.com";
         const cacheKey = `backlink_cache_${btoa(siteUrl)}`;
         
-        // Check if we have cached data that's not expired
-        const cachedData = localStorage.getItem(cacheKey);
-        if (cachedData) {
-          try {
-            const { timestamp, content } = JSON.parse(cachedData);
-            // Check if cache is still valid (15 minutes)
-            if (timestamp && Date.now() - timestamp < 900000) {
-              console.log('Using cached external links data');
-              setExternalLinks(content);
-              setIsLoadingLinks(false);
-              return;
-            }
-          } catch (error) {
-            console.log('Invalid cache data, fetching fresh data');
-          }
-        }
+        // Clear cache for testing purposes
+        localStorage.removeItem(cacheKey);
+        console.log('Cleared cache for external links to force fresh fetch');
         
         // Fetch fresh data
         const apiUrl = `https://watchtower.beteks.com/api/v1/watch-tower/link-mng-payload?site=${encodeURIComponent(siteUrl)}`;
@@ -79,8 +66,11 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
           }
         });
         
+        console.log('API response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('API response data:', data);
           
           // Cache the result
           localStorage.setItem(cacheKey, JSON.stringify({
@@ -89,28 +79,49 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
           }));
           
           setExternalLinks(data);
-          console.log('Successfully fetched external links');
+          console.log('Successfully fetched external links, count:', data.length);
         } else {
           console.error('Failed to fetch external links:', response.status);
+          // Try to get response text for more details
+          try {
+            const errorText = await response.text();
+            console.error('Error response text:', errorText);
+          } catch (textError) {
+            console.error('Could not get error response text');
+          }
+          
           setExternalLinksError(true);
           throw new Error(`API responded with status: ${response.status}`);
         }
       } catch (error) {
         console.error('Error fetching external links:', error);
         setExternalLinksError(true);
+        
+        // Show toast notification about the error
+        toast({
+          title: "Error fetching external links",
+          description: "Using internal links instead",
+          variant: "destructive",
+        });
       } finally {
         setIsLoadingLinks(false);
       }
     };
 
     fetchExternalLinks();
-  }, [location.pathname]); // Refetch when route changes
+  }, [location.pathname, toast]); // Added toast to dependencies
 
   // Filter external links based on position and display rules
   const filterExternalLinks = (position: string = 'sidebar') => {
-    if (!externalLinks || externalLinks.length === 0 || externalLinksError) return [];
+    if (!externalLinks || externalLinks.length === 0 || externalLinksError) {
+      console.log('No external links available or there was an error');
+      return [];
+    }
     
-    return externalLinks.filter(link => {
+    console.log('Filtering external links for position:', position);
+    console.log('Total external links before filtering:', externalLinks.length);
+    
+    const filtered = externalLinks.filter(link => {
       // Check if the link is active
       if (!link.is_active) {
         return false;
@@ -133,9 +144,19 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
 
       return true;
     });
+    
+    console.log('Filtered external links for position:', position, 'count:', filtered.length);
+    return filtered;
   };
 
   const filteredSidebarLinks = filterExternalLinks('sidebar');
+  console.log('Filtered sidebar links count:', filteredSidebarLinks.length);
+  
+  // For debugging
+  useEffect(() => {
+    console.log('Current location pathname:', location.pathname);
+    console.log('Is homepage?', isHomePage());
+  }, [location.pathname]);
 
   // Function to safely render HTML content
   const renderHTML = (htmlContent: string) => {
@@ -173,7 +194,7 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold mb-4 text-ink-dark flex items-center gap-2">
             <LinkIcon className="w-5 h-5 text-gray-400" />
-            Sponsored Links
+            Sponsored Links (External)
           </h2>
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="grid grid-cols-1 divide-y divide-gray-100">
