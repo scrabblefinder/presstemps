@@ -47,8 +47,8 @@ export const PopularNewsSidebar = ({ articles }: PopularNewsSidebarProps) => {
         setIsLoadingLinks(true);
         setExternalLinksError(false);
         
-        // Construct the site URL similar to the PHP version
-        const siteUrl = window.location.origin;
+        // For testing, use presstemps.com instead of the current origin
+        const siteUrl = "https://presstemps.com";
         const cacheKey = `backlink_cache_${btoa(siteUrl)}`;
         
         // Check if we have cached data that's not expired
